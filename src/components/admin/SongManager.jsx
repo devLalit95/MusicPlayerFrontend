@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 
 class SongManager {
   constructor(baseURL, token) {
-    this.BASE_URL = baseURL;
+    this.BASE_URL = "https://musicplayer-rc7u.onrender.com";
     this.token = token;
   }
 

@@ -16,6 +16,9 @@ export default function AdminPanel() {
   
   const BASE_URL = "https://musicplayer-rc7u.onrender.com";
   const [songManager] = useState(new SongManager(BASE_URL, ""));
+  const user = JSON.parse(localStorage.getItem("user"));
+  const name = user?.username;
+
 
   // Update song manager when token changes
   useEffect(() => {
@@ -80,29 +83,28 @@ export default function AdminPanel() {
     }
   };
 
-  const handleUpdateSong = async (songData) => {
-    try {
-      setLoading(true);
-      const updateData = {
-        title: songData.title,
-        artist: songData.artist,
-        album: songData.album,
-        durationSeconds: songData.durationSeconds,
-      };
+const handleUpdateSong = async (songData) => {
+  try {
+    setLoading(true);
 
-      await songManager.updateSong(editingSong.id, updateData);
-      toast.success("✅ Song updated successfully!");
-      resetForm();
-      fetchSongs();
-      setActiveTab("songs");
-    } catch (err) {
-      if (err.message === "SESSION_EXPIRED") {
-        handleLogout();
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+    const updateData = {};
+    if (songData.title?.trim()) updateData.title = songData.title;
+    if (songData.artist?.trim()) updateData.artist = songData.artist;
+    if (songData.album?.trim()) updateData.album = songData.album;
+    if (songData.durationSeconds != null)
+      updateData.durationSeconds = Number(songData.durationSeconds);
+
+    await songManager.updateSong(editingSong.id, updateData);
+
+    toast.success("✅ Song updated successfully!");
+    resetForm();
+    fetchSongs();
+    setActiveTab("songs");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleDeleteSong = async (id, title) => {
     if (!window.confirm(`Are you sure you want to delete "${title}"?`)) {
@@ -152,21 +154,21 @@ export default function AdminPanel() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+              {/* <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                 <span className="text-white font-bold">M</span>
-              </div>
+              </div> */}
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Music Admin</h1>
-                <p className="text-sm text-gray-500">Manage your music library</p>
+                <h1 className="text-2xl font-bold text-gray-900">Admin</h1>
+                <p className="text-sm text-gray-500">Manage Songs</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
               <div className="text-right">
-                <div className="font-medium text-gray-900">Welcome, Admin!</div>
-                <div className="text-sm text-gray-500">
+                <div className="font-medium text-gray-900">Welcome, <span style={{color:"#7c3aed"}}>{name || "Lalit"}</span> </div>
+                {/* <div className="text-sm text-gray-500">
                   {songs.length} songs in library
-                </div>
+                </div> */}
               </div>
               <button
                 onClick={handleLogout}

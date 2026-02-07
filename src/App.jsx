@@ -2,12 +2,12 @@
 import { useState } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import LoginComponent from './components/LoginComponent'
-import AdminSongUpload from './components/AdminSongUpload'
-import MusicPlayer from './components/MusicPlayer'
+import MusicPlayer from './components/music/MusicPlayer'
 import './App.css'
 import Test from './components/HomePage'
 import HomePage from './components/HomePage'
 import AdminPanel from './components/admin/AdminPanel'
+import MusicAdminDashboard from './components/admin/MusicAdminDashboard'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -19,6 +19,7 @@ function App() {
         <Route path="/login" element={<LoginComponent />} />
         <Route path="/admin" element={<AdminPanel />} />
         <Route path="/music" element={<MusicPlayer />} />
+         <Route path="/dashboard" element={<MusicAdminDashboard />} />
         {/* <Route path="/" element={<Navigate to="/music" replace />} /> */}
         
       </Routes>
