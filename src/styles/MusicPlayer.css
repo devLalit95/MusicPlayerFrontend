@@ -1,39 +1,7 @@
-/* MusicPlayer.css */
-:root {
-  /* Background / Neutral Colors */
-  --midnight: #0f0f23;
-  --darkGray: #1a1a2e;
-  --slateGray: #2d2d44;
-  --lightGray: #e8e8e8;
-  --gray400: #a0a0a0;
-
-  /* Accent / Action Colors */
-  --electricPurple: #7c3aed;
-  --softViolet: #8b5cf6;
-  --neonPink: #ec4899;
-  --cyanGlow: #06b6d4;
-  --gold: #f59e0b;
-
-  /* Gradients */
-  --gradientPurplePinkCyan: linear-gradient(135deg, #7c3aed, #ec4899, #06b6d4);
-}
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-body {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: var(--midnight);
-  color: var(--lightGray);
-  overflow-x: hidden;
-}
-
+/* MusicPlayer.css — uses tokens from theme.css */
 .music-player {
   min-height: 100vh;
-  background-color: var(--midnight);
+  background-color: var(--bg-base);
   transition: all 0.3s ease;
 }
 
@@ -48,7 +16,7 @@ body {
 
 /* Header Styles */
 .player-header {
-  background: var(--gradientPurplePinkCyan);
+  background: var(--gradient-accent);
   padding: 1rem 2rem;
   box-shadow: 0 4px 20px rgba(124, 58, 237, 0.3);
 }
@@ -92,7 +60,7 @@ body {
 .user-avatar {
   width: 40px;
   height: 40px;
-  background: var(--neonPink);
+  background: var(--accent-bright);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -135,7 +103,7 @@ body {
 
 /* Now Playing Section */
 .now-playing-section {
-  background: var(--darkGray);
+  background: var(--bg-card);
   border-radius: 20px;
   padding: 2.5rem;
   text-align: center;
@@ -157,7 +125,7 @@ body {
 .album-placeholder {
   width: 140px;
   height: 140px;
-  background: var(--gradientPurplePinkCyan);
+  background: var(--gradient-accent);
   border-radius: 20px;
   display: flex;
   align-items: center;
@@ -174,20 +142,20 @@ body {
 
 .track-title {
   font-size: 2rem;
-  color: var(--lightGray);
+  color: var(--text-primary);
   margin-bottom: 0.5rem;
   font-weight: 700;
 }
 
 .track-artist {
   font-size: 1.3rem;
-  color: var(--cyanGlow);
+  color: var(--cyan-main);
   margin-bottom: 0.5rem;
   font-weight: 500;
 }
 
 .track-album {
-  color: var(--gray400);
+  color: var(--text-muted);
   font-size: 1.1rem;
 }
 
@@ -201,7 +169,7 @@ body {
 
 .time-current,
 .time-total {
-  color: var(--gray400);
+  color: var(--text-muted);
   font-size: 0.9rem;
   min-width: 40px;
   font-weight: 500;
@@ -210,7 +178,7 @@ body {
 .progress-bar {
   flex: 1;
   height: 8px;
-  background: var(--slateGray);
+  background: var(--bg-elevated);
   border-radius: 4px;
   cursor: pointer;
   position: relative;
@@ -227,10 +195,10 @@ body {
 
 .progress-fill {
   height: 100%;
-  background: var(--cyanGlow);
+  background: var(--cyan-main);
   border-radius: 4px;
   position: relative;
-  box-shadow: 0 0 20px var(--cyanGlow);
+  box-shadow: 0 0 20px var(--cyan-main);
   transition: width 0.1s ease;
 }
 
@@ -242,9 +210,9 @@ body {
   transform: translateY(-50%);
   width: 16px;
   height: 16px;
-  background: var(--cyanGlow);
+  background: var(--cyan-main);
   border-radius: 50%;
-  box-shadow: 0 0 10px var(--cyanGlow);
+  box-shadow: 0 0 10px var(--cyan-main);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
@@ -261,7 +229,7 @@ body {
 .control-btn {
   background: none;
   border: none;
-  color: var(--lightGray);
+  color: var(--text-primary);
   font-size: 1.2rem;
   cursor: pointer;
   padding: 1rem;
@@ -273,23 +241,23 @@ body {
 }
 
 .control-btn:hover {
-  background: var(--slateGray);
+  background: var(--bg-elevated);
   color: white;
   transform: scale(1.1);
 }
 
 .control-btn.shuffle,
 .control-btn.repeat {
-  color: var(--gray400);
+  color: var(--text-muted);
 }
 
 .control-btn.shuffle.active,
 .control-btn.repeat.active {
-  color: var(--electricPurple);
+  color: var(--accent-primary);
 }
 
 .play-pause {
-  background: var(--neonPink);
+  background: var(--accent-bright);
   color: white;
   width: 70px;
   height: 70px;
@@ -298,7 +266,7 @@ body {
 }
 
 .play-pause:hover {
-  background: var(--electricPurple);
+  background: var(--accent-primary);
   transform: scale(1.05);
   box-shadow: 0 6px 25px rgba(124, 58, 237, 0.5);
 }
@@ -316,7 +284,7 @@ body {
 .volume-btn {
   background: none;
   border: none;
-  color: var(--gray400);
+  color: var(--text-muted);
   font-size: 1.2rem;
   cursor: pointer;
   padding: 0.5rem;
@@ -325,14 +293,14 @@ body {
 }
 
 .volume-btn:hover {
-  color: var(--lightGray);
-  background: var(--slateGray);
+  color: var(--text-primary);
+  background: var(--bg-elevated);
 }
 
 .volume-slider {
   flex: 1;
   height: 6px;
-  background: var(--slateGray);
+  background: var(--bg-elevated);
   border-radius: 3px;
   outline: none;
   -webkit-appearance: none;
@@ -343,10 +311,10 @@ body {
   -webkit-appearance: none;
   width: 16px;
   height: 16px;
-  background: var(--cyanGlow);
+  background: var(--cyan-main);
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 0 8px var(--cyanGlow);
+  box-shadow: 0 0 8px var(--cyan-main);
   transition: all 0.3s ease;
 }
 
@@ -356,7 +324,7 @@ body {
 
 /* Songs Section */
 .songs-section {
-  background: var(--darkGray);
+  background: var(--bg-card);
   border-radius: 20px;
   padding: 2rem;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
@@ -368,17 +336,17 @@ body {
   align-items: center;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--slateGray);
+  border-bottom: 1px solid var(--bg-elevated);
 }
 
 .section-header h2 {
-  color: var(--lightGray);
+  color: var(--text-primary);
   font-size: 1.5rem;
   font-weight: 600;
 }
 
 .fullscreen-btn {
-  background: var(--electricPurple);
+  background: var(--accent-primary);
   border: none;
   color: white;
   padding: 0.75rem;
@@ -392,7 +360,7 @@ body {
 }
 
 .fullscreen-btn:hover {
-  background: var(--softViolet);
+  background: var(--accent-soft);
   transform: scale(1.05);
 }
 
@@ -407,7 +375,7 @@ body {
   display: flex;
   align-items: center;
   padding: 1.25rem 1.5rem;
-  background: var(--slateGray);
+  background: var(--bg-elevated);
   border-radius: 15px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -417,26 +385,26 @@ body {
 
 .song-item:hover {
   background: rgba(124, 58, 237, 0.1);
-  border-color: var(--electricPurple);
+  border-color: var(--accent-primary);
   transform: translateY(-2px);
 }
 
 .song-item.active {
   background: rgba(6, 182, 212, 0.1);
-  border-color: var(--cyanGlow);
+  border-color: var(--cyan-main);
   box-shadow: 0 4px 20px rgba(6, 182, 212, 0.3);
 }
 
 .song-number {
   width: 30px;
   text-align: center;
-  color: var(--gray400);
+  color: var(--text-muted);
   font-weight: 500;
   font-size: 0.9rem;
 }
 
 .playing-indicator {
-  color: var(--neonPink);
+  color: var(--accent-bright);
   animation: pulse 1.5s infinite;
   font-size: 1.2rem;
 }
@@ -457,25 +425,25 @@ body {
 }
 
 .song-title {
-  color: var(--lightGray);
+  color: var(--text-primary);
   font-weight: 600;
   margin-bottom: 0.25rem;
   font-size: 1.1rem;
 }
 
 .song-artist {
-  color: var(--gray400);
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 
 .song-album {
-  color: var(--gray400);
+  color: var(--text-muted);
   width: 200px;
   font-size: 0.9rem;
 }
 
 .song-duration {
-  color: var(--gray400);
+  color: var(--text-muted);
   width: 60px;
   text-align: right;
   font-size: 0.9rem;
@@ -485,7 +453,7 @@ body {
 .favorite-btn {
   background: none;
   border: none;
-  color: var(--gray400);
+  color: var(--text-muted);
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 50%;
@@ -497,19 +465,19 @@ body {
 }
 
 .favorite-btn:hover {
-  color: var(--neonPink);
+  color: var(--accent-bright);
   background: rgba(236, 72, 153, 0.1);
 }
 
 .favorite-btn.active {
-  color: var(--neonPink);
+  color: var(--accent-bright);
 }
 
 /* Empty State */
 .empty-state {
   text-align: center;
   padding: 4rem 2rem;
-  color: var(--gray400);
+  color: var(--text-muted);
 }
 
 .empty-icon {
@@ -528,11 +496,15 @@ body {
   gap: 1rem;
 }
 
+.loading-container {
+  background-color: var(--bg-base);
+}
+
 .loading-spinner {
   width: 50px;
   height: 50px;
-  border: 4px solid var(--slateGray);
-  border-left: 4px solid var(--electricPurple);
+  border: 4px solid var(--bg-elevated);
+  border-left: 4px solid var(--accent-primary);
   border-radius: 50%;
   animation: spin 1s linear infinite;
 }
@@ -543,7 +515,7 @@ body {
 }
 
 .loading-container p {
-  color: var(--lightGray);
+  color: var(--text-primary);
   font-size: 1.1rem;
 }
 
@@ -556,19 +528,20 @@ body {
   height: 100vh;
   gap: 1.5rem;
   text-align: center;
+  background-color: var(--bg-base);
 }
 
 .error-message {
-  color: var(--neonPink);
+  color: var(--accent-bright);
   font-size: 1.2rem;
   background: rgba(236, 72, 153, 0.1);
   padding: 1rem 2rem;
   border-radius: 10px;
-  border: 1px solid var(--neonPink);
+  border: 1px solid var(--accent-bright);
 }
 
 .retry-btn {
-  background: var(--electricPurple);
+  background: var(--accent-primary);
   border: none;
   color: white;
   padding: 0.75rem 1.5rem;
@@ -579,7 +552,7 @@ body {
 }
 
 .retry-btn:hover {
-  background: var(--softViolet);
+  background: var(--accent-soft);
   transform: scale(1.05);
 }
 
@@ -682,13 +655,13 @@ body {
 
 .user-profile-trigger:hover {
   background: rgba(255, 255, 255, 0.15);
-  border-color: var(--softViolet);
+  border-color: var(--accent-soft);
 }
 
 .user-avatar {
   width: 40px;
   height: 40px;
-  background: var(--neonPink);
+  background: var(--accent-bright);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -711,12 +684,12 @@ body {
   top: 100%;
   right: 0;
   margin-top: 0.5rem;
-  background: var(--darkGray);
+  background: var(--bg-card);
   border-radius: 15px;
   padding: 1rem 0;
   min-width: 280px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-  border: 1px solid var(--slateGray);
+  border: 1px solid var(--bg-elevated);
   z-index: 1000;
   animation: dropdownFade 0.2s ease;
 }
@@ -742,7 +715,7 @@ body {
 .dropdown-avatar {
   width: 50px;
   height: 50px;
-  background: var(--gradientPurplePinkCyan);
+  background: var(--gradient-accent);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -758,20 +731,20 @@ body {
 }
 
 .dropdown-username {
-  color: var(--lightGray);
+  color: var(--text-primary);
   font-weight: 700;
   font-size: 1.1rem;
   margin-bottom: 0.25rem;
 }
 
 .dropdown-email {
-  color: var(--gray400);
+  color: var(--text-muted);
   font-size: 0.85rem;
   margin-bottom: 0.25rem;
 }
 
 .dropdown-role {
-  color: var(--cyanGlow);
+  color: var(--cyan-main);
   font-size: 0.8rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -780,7 +753,7 @@ body {
 
 .dropdown-divider {
   height: 1px;
-  background: var(--slateGray);
+  background: var(--bg-elevated);
   margin: 0.75rem 0;
 }
 
@@ -793,7 +766,7 @@ body {
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  color: var(--lightGray);
+  color: var(--text-primary);
   cursor: pointer;
   border-radius: 8px;
   transition: all 0.3s ease;
@@ -801,18 +774,18 @@ body {
 }
 
 .dropdown-item:hover {
-  background: var(--slateGray);
+  background: var(--bg-elevated);
   color: white;
 }
 
 .dropdown-icon {
-  color: var(--gray400);
+  color: var(--text-muted);
   font-size: 0.9rem;
   transition: color 0.3s ease;
 }
 
 .dropdown-item:hover .dropdown-icon {
-  color: var(--cyanGlow);
+  color: var(--cyan-main);
 }
 
 /* Logout Button */
@@ -822,8 +795,8 @@ body {
   gap: 0.75rem;
   padding: 0.75rem 1rem;
   background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: var(--color-danger);
+  border: 1px solid color-mix(in srgb, var(--color-danger) 30%, transparent);
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;

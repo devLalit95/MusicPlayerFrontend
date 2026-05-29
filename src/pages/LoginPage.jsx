@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { apiClient } from '../services/api';
+import { getApiErrorMessage } from '../utils/errors';
+import { getStoredToken, setAuthSession } from '../utils/storage';
 import {
     FaUser,
     FaLock,
@@ -17,7 +19,7 @@ import {
     IoShieldCheckmark
 } from 'react-icons/io5';
 
-const LoginComponent = () => {
+export default function LoginPage() {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -31,46 +33,11 @@ const LoginComponent = () => {
         password: ''
     });
 
-    const API_BASE_URL = "https://musicplayer-rc7u.onrender.com";
-
     const [registerForm, setRegisterForm] = useState({
         username: '',
         email: '',
         password: ''
     });
-
-    // Create axios instance with base configuration
-    const api = axios.create({
-        baseURL: API_BASE_URL,
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        timeout: 10000,
-    });
-
-    // Add response interceptor for error handling
-    useEffect(() => {
-        const responseInterceptor = api.interceptors.response.use(
-            (response) => response,
-            (error) => {
-                console.error('API Error:', error);
-                
-                if (error.code === 'ECONNABORTED') {
-                    throw new Error('Request timeout. Please check your internet connection.');
-                }
-                
-                if (!error.response) {
-                    throw new Error('Network error. Please check your connection.');
-                }
-                
-                return Promise.reject(error);
-            }
-        );
-
-        return () => {
-            api.interceptors.response.eject(responseInterceptor);
-        };
-    }, []);
 
     // Validation functions
     const validateUsername = (username) => {
@@ -171,11 +138,11 @@ const LoginComponent = () => {
         if (/(?=.*[@$!%*?&])/.test(password)) strength++;
 
         const levels = [
-            { strength: 1, text: 'Weak', color: 'bg-red-500' },
-            { strength: 2, text: 'Fair', color: 'bg-orange-500' },
-            { strength: 3, text: 'Good', color: 'bg-yellow-500' },
-            { strength: 4, text: 'Strong', color: 'bg-lime-500' },
-            { strength: 5, text: 'Very Strong', color: 'bg-green-500' }
+            { strength: 1, text: 'Weak', color: 'bg-danger' },
+            { strength: 2, text: 'Fair', color: 'bg-warning' },
+            { strength: 3, text: 'Good', color: 'bg-cyan' },
+            { strength: 4, text: 'Strong', color: 'bg-accent-soft' },
+            { strength: 5, text: 'Very Strong', color: 'bg-success' },
         ];
 
         return levels[strength - 1] || levels[0];
@@ -200,45 +167,19 @@ const LoginComponent = () => {
         }
 
         try {
-            const response = await api.post('/api/auth/login', loginForm);
+            const response = await apiClient.post('/api/auth/login', loginForm);
             const data = response.data;
 
-            localStorage.setItem('token', data.token);
-            localStorage.setItem('user', JSON.stringify(data));
-            
-          
+            if (!data?.token) {
+                setError('Login failed. No authentication token received.');
+                return;
+            }
+
+            setAuthSession(data.token, data);
             navigate('/music');
 
         } catch (err) {
-            console.error('Login error:', err);
-            
-            let errorMessage = 'Login failed. Please try again.';
-            
-            if (err.response) {
-                const status = err.response.status;
-                switch (status) {
-                    case 400:
-                        errorMessage = 'Invalid request. Please check your input.';
-                        break;
-                    case 401:
-                        errorMessage = 'Invalid username or password.';
-                        break;
-                    case 404:
-                        errorMessage = 'Login service unavailable.';
-                        break;
-                    case 500:
-                        errorMessage = 'Server error. Please try again later.';
-                        break;
-                    default:
-                        errorMessage = err.response.data?.message || `Login failed (${status})`;
-                }
-            } else if (err.request) {
-                errorMessage = 'Unable to connect to server. Please check your internet connection.';
-            } else {
-                errorMessage = err.message || 'An unexpected error occurred.';
-            }
-            
-            setError(errorMessage);
+            setError(getApiErrorMessage(err, 'Login failed. Please try again.'));
         } finally {
             setLoading(false);
         }
@@ -265,10 +206,8 @@ const LoginComponent = () => {
         }
 
         try {
-            const response = await api.post('/api/auth/register', registerForm);
-            
-            console.log('Registration successful:', response.data);       
-            setError('');
+            await apiClient.post('/api/auth/register', registerForm);
+
             setIsRegister(false);
             setRegisterForm({ username: '', email: '', password: '' });
             setFieldErrors({});
@@ -276,35 +215,7 @@ const LoginComponent = () => {
             setError('Registration successful! Please login with your credentials.');
 
         } catch (err) {
-            console.error('Registration error:', err);
-            
-            let errorMessage = 'Registration failed. Please try again.';
-            
-            if (err.response) {
-                const status = err.response.status;
-                switch (status) {
-                    case 400:
-                        errorMessage = err.response.data?.message || 'Invalid registration data.';
-                        break;
-                    case 409:
-                        errorMessage = 'Username or email already exists.';
-                        break;
-                    case 422:
-                        errorMessage = 'Validation failed. Please check your input.';
-                        break;
-                    case 500:
-                        errorMessage = 'Server error. Please try again later.';
-                        break;
-                    default:
-                        errorMessage = err.response.data?.message || `Registration failed (${status})`;
-                }
-            } else if (err.request) {
-                errorMessage = 'Unable to connect to server. Please check your internet connection.';
-            } else {
-                errorMessage = err.message || 'An unexpected error occurred.';
-            }
-            
-            setError(errorMessage);
+            setError(getApiErrorMessage(err, 'Registration failed. Please try again.'));
         } finally {
             setLoading(false);
         }
@@ -350,7 +261,7 @@ const LoginComponent = () => {
     };
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = getStoredToken();
         if (token) {
             navigate('/music');
         }
@@ -360,30 +271,30 @@ const LoginComponent = () => {
     const passwordStrength = isRegister ? getPasswordStrength(registerForm.password) : null;
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+        <div className="app-page-auth flex items-center justify-center p-4 relative overflow-hidden">
             {/* Animated background elements */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-                <div className="absolute top-40 left-40 w-80 h-80 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+                <div className="absolute -top-40 -right-40 w-80 h-80 bg-accent rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-accent-bright rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+                <div className="absolute top-40 left-40 w-80 h-80 bg-cyan rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
             </div>
 
             <div className="w-full max-w-md relative z-10">
-                <div className="bg-gray-900/80 backdrop-blur-xl rounded-3xl p-8 border border-gray-700/50 shadow-2xl transform hover:scale-[1.01] transition-all duration-500">
+                <div className="app-auth-card backdrop-blur-xl rounded-3xl p-8 transform hover:scale-[1.01] transition-all duration-500">
                     {/* Header */}
                     <div className="text-center mb-8">
                         <div className="flex justify-center mb-6">
                             <div className="relative group">
-                                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                <div className="relative p-4 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 rounded-2xl transform group-hover:rotate-6 transition-transform duration-300">
-                                    <IoMusicalNotes className="text-4xl text-white" />
+                                <div className="absolute inset-0 bg-gradient-to-r from-accent via-accent-bright to-cyan rounded-2xl blur-lg opacity-75 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <div className="relative p-4 bg-gradient-to-r from-accent via-accent-bright to-cyan rounded-2xl transform group-hover:rotate-6 transition-transform duration-300">
+                                    <IoMusicalNotes className="text-4xl text-theme-primary" />
                                 </div>
                             </div>
                         </div>
-                        <h2 className="text-4xl font-bold bg-gradient-to-r from-purple-400 via-pink-400 to-cyan-400 bg-clip-text text-transparent mb-2">
+                        <h2 className="text-4xl font-bold bg-gradient-to-r from-accent-soft via-accent-tint to-cyan-light bg-clip-text text-transparent mb-2">
                             Beat Buff Music 
                         </h2>
-                        <p className="text-gray-400">
+                        <p className="text-theme-muted">
                             {isRegister ? 'Create your account' : 'Welcome back to your music'}
                         </p>
                     </div>
@@ -391,8 +302,8 @@ const LoginComponent = () => {
                     {/* Error/Success Message */}
                     {error && (
                         <div className={`mb-6 p-4 ${error.includes('successful')
-                                ? 'bg-green-500/10 border border-green-500/50 text-green-400'
-                                : 'bg-red-500/10 border border-red-500/50 text-red-400'
+                                ? 'bg-success/10 border border-success/50 text-success'
+                                : 'bg-danger/10 border border-danger/50 text-danger'
                             } rounded-xl text-sm flex items-start space-x-3 animate-fadeIn`}>
                             {error.includes('successful') ? (
                                 <FaCheckCircle className="mt-0.5 flex-shrink-0" />
@@ -408,17 +319,17 @@ const LoginComponent = () => {
                         <div className="space-y-5">
                             {/* Username Field */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 text-left mb-2">
+                                <label className="block text-sm font-medium text-theme-secondary text-left mb-2">
                                     Username
                                 </label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <FaUser className={`transition-colors duration-300 ${
                                             touchedFields.username && !fieldErrors.username
-                                                ? 'text-green-400'
+                                                ? 'text-success'
                                                 : fieldErrors.username
-                                                ? 'text-red-400'
-                                                : 'text-gray-500'
+                                                ? 'text-danger'
+                                                : 'text-theme-muted'
                                         }`} />
                                     </div>
                                     <input
@@ -428,29 +339,29 @@ const LoginComponent = () => {
                                         onChange={handleInputChange}
                                         onBlur={handleBlur}
                                         placeholder="Enter your username"
-                                        className={`w-full pl-10 pr-10 py-3 bg-gray-800/50 border ${
+                                        className={`app-input w-full pl-10 pr-10 py-3 rounded-xl ${
                                             touchedFields.username && !fieldErrors.username
-                                                ? 'border-green-500/50 focus:border-green-500'
+                                                ? 'border-success focus:border-success'
                                                 : fieldErrors.username
-                                                ? 'border-red-500/50 focus:border-red-500'
-                                                : 'border-gray-600 focus:border-purple-500'
-                                        } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 ${
+                                                ? 'border-danger focus:border-danger'
+                                                : ''
+                                        } focus:ring-2 ${
                                             touchedFields.username && !fieldErrors.username
-                                                ? 'focus:ring-green-500/20'
+                                                ? 'focus:ring-success/20'
                                                 : fieldErrors.username
-                                                ? 'focus:ring-red-500/20'
-                                                : 'focus:ring-purple-500/20'
+                                                ? 'focus:ring-danger/20'
+                                                : 'focus:ring-accent/20'
                                         } transition-all duration-300`}
                                         disabled={loading}
                                     />
                                     {touchedFields.username && !fieldErrors.username && (
                                         <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                            <FaCheckCircle className="text-green-400" />
+                                            <FaCheckCircle className="text-success" />
                                         </div>
                                     )}
                                 </div>
                                 {fieldErrors.username && touchedFields.username && (
-                                    <p className="mt-2 text-xs text-red-400 flex items-center space-x-1">
+                                    <p className="mt-2 text-xs text-danger flex items-center space-x-1">
                                         <FaExclamationTriangle />
                                         <span>{fieldErrors.username}</span>
                                     </p>
@@ -460,17 +371,17 @@ const LoginComponent = () => {
                             {/* Email Field (Register only) */}
                             {isRegister && (
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-300 text-left mb-2">
+                                    <label className="block text-sm font-medium text-theme-secondary text-left mb-2">
                                         Email Address
                                     </label>
                                     <div className="relative group">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <FaEnvelope className={`transition-colors duration-300 ${
                                                 touchedFields.email && !fieldErrors.email
-                                                    ? 'text-green-400'
+                                                    ? 'text-success'
                                                     : fieldErrors.email
-                                                    ? 'text-red-400'
-                                                    : 'text-gray-500'
+                                                    ? 'text-danger'
+                                                    : 'text-theme-muted'
                                             }`} />
                                         </div>
                                         <input
@@ -480,29 +391,29 @@ const LoginComponent = () => {
                                             onChange={handleInputChange}
                                             onBlur={handleBlur}
                                             placeholder="Enter your email"
-                                            className={`w-full pl-10 pr-10 py-3 bg-gray-800/50 border ${
+                                            className={`w-full pl-10 pr-10 py-3  app-input border ${
                                                 touchedFields.email && !fieldErrors.email
-                                                    ? 'border-green-500/50 focus:border-green-500'
+                                                    ? 'border-success/50 focus:border-success'
                                                     : fieldErrors.email
-                                                    ? 'border-red-500/50 focus:border-red-500'
-                                                    : 'border-gray-600 focus:border-purple-500'
-                                            } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 ${
+                                                    ? 'border-danger/50 focus:border-danger'
+                                                    : ''
+                                            } rounded-xl text-theme-primary  focus:outline-none focus:ring-2 ${
                                                 touchedFields.email && !fieldErrors.email
-                                                    ? 'focus:ring-green-500/20'
+                                                    ? 'focus:ring-success/20'
                                                     : fieldErrors.email
-                                                    ? 'focus:ring-red-500/20'
-                                                    : 'focus:ring-purple-500/20'
+                                                    ? 'focus:ring-danger/20'
+                                                    : 'focus:ring-accent/20'
                                             } transition-all duration-300`}
                                             disabled={loading}
                                         />
                                         {touchedFields.email && !fieldErrors.email && (
                                             <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                                <FaCheckCircle className="text-green-400" />
+                                                <FaCheckCircle className="text-success" />
                                             </div>
                                         )}
                                     </div>
                                     {fieldErrors.email && touchedFields.email && (
-                                        <p className="mt-2 text-xs text-red-400 flex items-center space-x-1">
+                                        <p className="mt-2 text-xs text-danger flex items-center space-x-1">
                                             <FaExclamationTriangle />
                                             <span>{fieldErrors.email}</span>
                                         </p>
@@ -512,17 +423,17 @@ const LoginComponent = () => {
 
                             {/* Password Field */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2 text-left">
+                                <label className="block text-sm font-medium text-theme-secondary mb-2 text-left">
                                     Password
                                 </label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                         <FaLock className={`transition-colors duration-300 ${
                                             touchedFields.password && !fieldErrors.password
-                                                ? 'text-green-400'
+                                                ? 'text-success'
                                                 : fieldErrors.password
-                                                ? 'text-red-400'
-                                                : 'text-gray-500'
+                                                ? 'text-danger'
+                                                : 'text-theme-muted'
                                         }`} />
                                     </div>
                                     <input
@@ -532,25 +443,25 @@ const LoginComponent = () => {
                                         onChange={handleInputChange}
                                         onBlur={handleBlur}
                                         placeholder={isRegister ? "Create a strong password" : "Enter your password"}
-                                        className={`w-full pl-10 pr-10 py-3 bg-gray-800/50 border ${
+                                        className={`w-full pl-10 pr-10 py-3  app-input border ${
                                             touchedFields.password && !fieldErrors.password
-                                                ? 'border-green-500/50 focus:border-green-500'
+                                                ? 'border-success/50 focus:border-success'
                                                 : fieldErrors.password
-                                                ? 'border-red-500/50 focus:border-red-500'
-                                                : 'border-gray-600 focus:border-purple-500'
-                                        } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 ${
+                                                ? 'border-danger/50 focus:border-danger'
+                                                : ''
+                                        } rounded-xl text-theme-primary  focus:outline-none focus:ring-2 ${
                                             touchedFields.password && !fieldErrors.password
-                                                ? 'focus:ring-green-500/20'
+                                                ? 'focus:ring-success/20'
                                                 : fieldErrors.password
-                                                ? 'focus:ring-red-500/20'
-                                                : 'focus:ring-purple-500/20'
+                                                ? 'focus:ring-danger/20'
+                                                : 'focus:ring-accent/20'
                                         } transition-all duration-300`}
                                         disabled={loading}
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-300 transition-colors"
+                                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-theme-muted hover:text-theme-secondary transition-colors"
                                         tabIndex="-1"
                                     >
                                         {showPassword ? <FaEyeSlash /> : <FaEye />}
@@ -567,17 +478,17 @@ const LoginComponent = () => {
                                                     className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
                                                         level <= passwordStrength?.strength
                                                             ? passwordStrength?.color
-                                                            : 'bg-gray-700'
+                                                            : 'bg-elevated'
                                                     }`}
                                                 ></div>
                                             ))}
                                         </div>
                                         {passwordStrength && (
-                                            <p className="text-xs text-gray-400">
+                                            <p className="text-xs text-theme-muted">
                                                 Password strength: <span className={`font-medium ${
-                                                    passwordStrength.strength >= 4 ? 'text-green-400' :
-                                                    passwordStrength.strength >= 3 ? 'text-yellow-400' :
-                                                    'text-orange-400'
+                                                    passwordStrength.strength >= 4 ? 'text-success' :
+                                                    passwordStrength.strength >= 3 ? 'text-cyan-light' :
+                                                    'text-warning'
                                                 }`}>{passwordStrength.text}</span>
                                             </p>
                                         )}
@@ -585,29 +496,29 @@ const LoginComponent = () => {
                                 )}
                                 
                                 {fieldErrors.password && touchedFields.password && (
-                                    <p className="mt-2 text-xs text-red-400 flex items-center space-x-1">
+                                    <p className="mt-2 text-xs text-danger flex items-center space-x-1">
                                         <FaExclamationTriangle />
                                         <span>{fieldErrors.password}</span>
                                     </p>
                                 )}
                                 
                                 {isRegister && !fieldErrors.password && (
-                                    <div className="mt-3 space-y-1.5 text-xs text-gray-400">
-                                        <p className="font-medium text-gray-300 flex items-center space-x-1">
-                                            <IoShieldCheckmark className="text-purple-400" />
+                                    <div className="mt-3 space-y-1.5 text-xs text-theme-muted">
+                                        <p className="font-medium text-theme-secondary flex items-center space-x-1">
+                                            <IoShieldCheckmark className="text-accent-soft" />
                                             <span>Password must contain:</span>
                                         </p>
                                         <ul className="space-y-1 ml-5">
-                                            <li className={registerForm.password.length >= 6 ? 'text-green-400' : ''}>
+                                            <li className={registerForm.password.length >= 6 ? 'text-success' : ''}>
                                                 • At least 6 characters
                                             </li>
-                                            <li className={/(?=.*[a-z])/.test(registerForm.password) ? 'text-green-400' : ''}>
+                                            <li className={/(?=.*[a-z])/.test(registerForm.password) ? 'text-success' : ''}>
                                                 • One lowercase letter
                                             </li>
-                                            <li className={/(?=.*[A-Z])/.test(registerForm.password) ? 'text-green-400' : ''}>
+                                            <li className={/(?=.*[A-Z])/.test(registerForm.password) ? 'text-success' : ''}>
                                                 • One uppercase letter
                                             </li>
-                                            <li className={/(?=.*\d)/.test(registerForm.password) ? 'text-green-400' : ''}>
+                                            <li className={/(?=.*\d)/.test(registerForm.password) ? 'text-success' : ''}>
                                                 • One number
                                             </li>
                                         </ul>
@@ -619,10 +530,9 @@ const LoginComponent = () => {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3.5 px-4 bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-purple-500/50 transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center space-x-2 relative overflow-hidden group"
+                            className="app-btn-primary w-full py-3.5 px-4 rounded-xl font-semibold transform hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 flex items-center justify-center space-x-2"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 via-pink-500 to-purple-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                            <span className="relative z-10 flex items-center space-x-2">
+                            <span className="flex items-center space-x-2">
                                 {loading ? (
                                     <>
                                         <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
@@ -642,16 +552,16 @@ const LoginComponent = () => {
                     <div className="mt-8 text-center">
                         <div className="relative">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-700"></div>
+                                <div className="w-full border-t border-theme"></div>
                             </div>
                             <div className="relative flex justify-center text-sm">
-                                <span className="px-4 bg-gray-900/80 text-gray-400">or</span>
+                                <span className="px-4 text-theme-muted bg-app-card">or</span>
                             </div>
                         </div>
                         <button
                             onClick={toggleMode}
                             disabled={loading}
-                            className="mt-4 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400 hover:from-purple-300 hover:to-pink-300 transition-all duration-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="mt-4 text-transparent bg-clip-text bg-gradient-to-r from-accent-soft to-accent-tint hover:from-accent-tint hover:to-accent-soft transition-all duration-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isRegister
                                 ? 'Already have an account? Sign in'
@@ -688,5 +598,3 @@ const LoginComponent = () => {
         </div>
     );
 };
-
-export default LoginComponent;

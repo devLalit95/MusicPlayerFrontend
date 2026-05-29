@@ -1,0 +1,262 @@
+:root {
+  /* Backgrounds */
+  --bg-base: #0d0d1a;
+  --bg-surface: #13112b;
+  --bg-card: #1e1b35;
+  --bg-elevated: #2a1f50;
+  --bg-hover: #3b1f6a;
+
+  /* Primary accent — violet */
+  --accent-deep: #5b21b6;
+  --accent-primary: #7c3aed;
+  --accent-bright: #9333ea;
+  --accent-soft: #c084fc;
+  --accent-tint: #e9d5ff;
+
+  /* Secondary accent — cyan */
+  --cyan-deep: #0e7490;
+  --cyan-main: #06b6d4;
+  --cyan-light: #67e8f9;
+
+  /* Text */
+  --text-primary: #f3edff;
+  --text-secondary: #c4b5d4;
+  --text-muted: #9b87c4;
+  --text-disabled: #6b5f8a;
+
+  /* Semantic */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #8b5cf6;
+
+  /* Derived */
+  --gradient-accent: linear-gradient(
+    135deg,
+    var(--accent-primary),
+    var(--accent-bright),
+    var(--cyan-main)
+  );
+  --gradient-accent-h: linear-gradient(
+    90deg,
+    var(--accent-soft),
+    var(--accent-tint),
+    var(--cyan-light)
+  );
+  --shadow-accent: 0 4px 24px color-mix(in srgb, var(--accent-primary) 35%, transparent);
+  --border-subtle: color-mix(in srgb, var(--accent-soft) 22%, transparent);
+  --border-strong: color-mix(in srgb, var(--accent-soft) 38%, transparent);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+#root {
+  min-height: 100vh;
+  background-color: var(--bg-base);
+}
+
+/* ── Page shells ── */
+.app-page {
+  min-height: 100vh;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+.app-page-auth {
+  min-height: 100vh;
+  background-color: var(--bg-base);
+  background-image:
+    radial-gradient(ellipse 90% 60% at 50% -15%, color-mix(in srgb, var(--accent-deep) 45%, transparent), transparent),
+    radial-gradient(ellipse 50% 40% at 100% 100%, color-mix(in srgb, var(--cyan-deep) 25%, transparent), transparent);
+  color: var(--text-primary);
+}
+
+.app-page-home {
+  min-height: 100vh;
+  background-color: var(--bg-base);
+  background-image: linear-gradient(
+    160deg,
+    var(--bg-base) 0%,
+    color-mix(in srgb, var(--accent-deep) 35%, var(--bg-base)) 45%,
+    var(--bg-surface) 100%
+  );
+  color: var(--text-primary);
+}
+
+/* ── Surfaces & panels ── */
+.app-header {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.app-panel {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 12px 40px color-mix(in srgb, #000 45%, transparent);
+}
+
+.app-panel-gradient {
+  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-surface) 100%);
+  border: 1px solid var(--border-subtle);
+  box-shadow: 0 12px 40px color-mix(in srgb, #000 45%, transparent);
+}
+
+.app-sticky-header {
+  background-color: color-mix(in srgb, var(--bg-surface) 92%, transparent);
+  border-bottom: 1px solid var(--border-subtle);
+  backdrop-filter: blur(12px);
+}
+
+.app-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+}
+
+.app-card-elevated {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+}
+
+.app-auth-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-strong);
+  box-shadow:
+    0 25px 50px -12px color-mix(in srgb, #000 55%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--accent-soft) 8%, transparent);
+}
+
+/* ── Inputs & buttons ── */
+.app-input {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+}
+
+.app-input::placeholder {
+  color: var(--text-disabled);
+}
+
+.app-input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-primary) 25%, transparent);
+}
+
+.app-btn-primary {
+  background: var(--gradient-accent);
+  color: var(--text-primary);
+  border: none;
+}
+
+.app-btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow: var(--shadow-accent);
+}
+
+.app-btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.app-btn-ghost {
+  background-color: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+}
+
+.app-btn-ghost:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ── List rows ── */
+.app-row {
+  background-color: var(--bg-elevated);
+  border: 1px solid transparent;
+}
+
+.app-row:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--border-subtle);
+}
+
+.app-row-active {
+  background-color: color-mix(in srgb, var(--cyan-main) 12%, var(--bg-elevated));
+  border-color: color-mix(in srgb, var(--cyan-main) 35%, transparent);
+}
+
+/* ── Admin (light contrast on dark) ── */
+.app-admin-page {
+  min-height: 100vh;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+}
+
+.app-admin-header {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.app-admin-tabs {
+  background-color: var(--bg-surface);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+/* ── Text utilities ── */
+.text-theme-primary { color: var(--text-primary); }
+.text-theme-secondary { color: var(--text-secondary); }
+.text-theme-muted { color: var(--text-muted); }
+.text-theme-disabled { color: var(--text-disabled); }
+.text-theme-accent { color: var(--accent-soft); }
+.text-theme-cyan { color: var(--cyan-light); }
+.text-theme-danger { color: var(--color-danger); }
+.text-theme-success { color: var(--color-success); }
+.text-theme-warning { color: var(--color-warning); }
+
+.gradient-accent-text {
+  background: var(--gradient-accent-h);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.border-theme { border-color: var(--border-subtle); }
+
+/* react-toastify */
+.Toastify__toast-theme--light {
+  background: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-subtle);
+}
+.Toastify__progress-bar {
+  background: var(--accent-primary) !important;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}

@@ -1,34 +1,43 @@
-// hooks/useMusicPlayer.js
 import { useState, useRef, useCallback } from 'react';
-import axios from 'axios';
+import { apiClient, authHeaders } from '../services/api';
+import { getApiErrorMessage } from '../utils/errors';
 
-export const useMusicPlayer = () => {
+export function useMusicPlayer() {
   const [songs, setSongs] = useState([]);
   const [currentSong, setCurrentSong] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [volume, setVolume] = useState(0.7);
   const [isMuted, setIsMuted] = useState(false);
-  
+  const [songsError, setSongsError] = useState('');
+  const [songsLoading, setSongsLoading] = useState(false);
+
   const audioRef = useRef(null);
   const progressBarRef = useRef(null);
 
   const fetchSongs = useCallback(async (token) => {
+    if (!token) {
+      setSongsError('Authentication required. Please sign in again.');
+      return;
+    }
+
+    setSongsLoading(true);
+    setSongsError('');
+
     try {
-      const response = await axios.get('https://musicplayer-rc7u.onrender.com/api/songs', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+      const response = await apiClient.get('/api/songs', {
+        headers: authHeaders(token),
       });
-      
-      setSongs(response.data);
-      if (response.data.length > 0) {
-        setCurrentSong(response.data[0]);
-      }
-    } catch (error) {
-      console.error('Error fetching songs:', error);
-      throw error;
+
+      const list = Array.isArray(response.data) ? response.data : [];
+      setSongs(list);
+      setCurrentSong(list.length > 0 ? list[0] : null);
+    } catch (err) {
+      setSongsError(getApiErrorMessage(err, 'Failed to load songs.'));
+      setSongs([]);
+      setCurrentSong(null);
+    } finally {
+      setSongsLoading(false);
     }
   }, []);
 
@@ -37,39 +46,45 @@ export const useMusicPlayer = () => {
 
     if (isPlaying) {
       audioRef.current.pause();
+      setIsPlaying(false);
     } else {
-      audioRef.current.play().catch(error => {
-        console.error('Error playing audio:', error);
-      });
+      audioRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(() => {
+          setSongsError('Unable to play this track. The audio file may be unavailable.');
+          setIsPlaying(false);
+        });
     }
-    setIsPlaying(!isPlaying);
   }, [currentSong, isPlaying]);
 
   const playSong = useCallback((song) => {
     setCurrentSong(song);
     setIsPlaying(true);
-    
-    setTimeout(() => {
-      audioRef.current?.play().catch(error => {
-        console.error('Error playing song:', error);
-        setIsPlaying(false);
-      });
-    }, 0);
+
+    queueMicrotask(() => {
+      audioRef.current
+        ?.play()
+        .catch(() => {
+          setSongsError('Unable to play this track. The audio file may be unavailable.');
+          setIsPlaying(false);
+        });
+    });
   }, []);
 
   const playNext = useCallback(() => {
     if (songs.length === 0) return;
-    
-    const currentIndex = songs.findIndex(song => song.id === currentSong?.id);
+
+    const currentIndex = songs.findIndex((song) => song.id === currentSong?.id);
     const nextIndex = (currentIndex + 1) % songs.length;
     playSong(songs[nextIndex]);
   }, [songs, currentSong, playSong]);
 
   const playPrevious = useCallback(() => {
     if (songs.length === 0) return;
-    
-    const currentIndex = songs.findIndex(song => song.id === currentSong?.id);
-    const prevIndex = currentIndex === 0 ? songs.length - 1 : currentIndex - 1;
+
+    const currentIndex = songs.findIndex((song) => song.id === currentSong?.id);
+    const prevIndex = currentIndex <= 0 ? songs.length - 1 : currentIndex - 1;
     playSong(songs[prevIndex]);
   }, [songs, currentSong, playSong]);
 
@@ -80,12 +95,12 @@ export const useMusicPlayer = () => {
   }, []);
 
   const handleProgressClick = useCallback((e) => {
-    if (progressBarRef.current && audioRef.current && audioRef.current.duration) {
+    if (progressBarRef.current && audioRef.current?.duration) {
       const progressBar = progressBarRef.current;
       const rect = progressBar.getBoundingClientRect();
       const clickPosition = (e.clientX - rect.left) / progressBar.offsetWidth;
       const newTime = clickPosition * audioRef.current.duration;
-      
+
       audioRef.current.currentTime = newTime;
       setCurrentTime(newTime);
     }
@@ -108,8 +123,8 @@ export const useMusicPlayer = () => {
   }, [isMuted, volume]);
 
   const formatTime = useCallback((seconds) => {
-    if (isNaN(seconds)) return '0:00';
-    
+    if (Number.isNaN(seconds)) return '0:00';
+
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
@@ -122,6 +137,8 @@ export const useMusicPlayer = () => {
     currentTime,
     volume,
     isMuted,
+    songsError,
+    songsLoading,
     audioRef,
     progressBarRef,
     fetchSongs,
@@ -133,6 +150,7 @@ export const useMusicPlayer = () => {
     handleProgressClick,
     handleVolumeChange,
     toggleMute,
-    formatTime
+    formatTime,
+    setSongsError,
   };
-};
+}

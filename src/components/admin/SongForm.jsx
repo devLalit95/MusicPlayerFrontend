@@ -69,14 +69,14 @@ const SongForm = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6">
+    <div className="bg-app-card rounded-2xl shadow-xl p-6">
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-2xl font-bold text-gray-800">
+        <h3 className="text-2xl font-bold text-theme-primary">
           {editingSong ? "Edit Song" : "Upload New Song"}
         </h3>
         <button
           onClick={onCancel}
-          className="text-gray-500 hover:text-gray-700 flex items-center space-x-1 transition-colors"
+          className="text-theme-muted hover:text-theme-secondary flex items-center space-x-1 transition-colors"
         >
           <span>← Back to Songs</span>
         </button>
@@ -85,55 +85,55 @@ const SongForm = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-theme-secondary mb-2">
               Song Title *
             </label>
             <input
               type="text"
               value={songData.title}
               onChange={(e) => handleInputChange('title', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+              className="w-full px-4 py-3 border border-accent-deep/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-colors"
               placeholder="Enter song title"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-theme-secondary mb-2">
               Artist *
             </label>
             <input
               type="text"
               value={songData.artist}
               onChange={(e) => handleInputChange('artist', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+              className="w-full px-4 py-3 border border-accent-deep/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-colors"
               placeholder="Enter artist name"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-theme-secondary mb-2">
               Album
             </label>
             <input
               type="text"
               value={songData.album}
               onChange={(e) => handleInputChange('album', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+              className="w-full px-4 py-3 border border-accent-deep/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-colors"
               placeholder="Enter album name (optional)"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-theme-secondary mb-2">
               Duration (seconds)
             </label>
             <input
               type="number"
               value={songData.durationSeconds}
               onChange={(e) => handleInputChange('durationSeconds', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
+              className="w-full px-4 py-3 border border-accent-deep/20 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-colors"
               placeholder="Duration in seconds"
               min="0"
             />
@@ -142,10 +142,10 @@ const SongForm = ({
 
         {!editingSong && (
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-theme-secondary mb-2">
               Audio File *
             </label>
-            <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-purple-400 transition-colors cursor-pointer">
+            <div className="border-2 border-dashed border-accent-deep/20 rounded-xl p-6 text-center hover:border-accent-soft transition-colors cursor-pointer">
               <input
                 type="file"
                 accept="audio/*"
@@ -157,14 +157,14 @@ const SongForm = ({
               <label htmlFor="file-upload" className="cursor-pointer block">
                 <div className="space-y-2">
                   <div className="text-3xl">🎵</div>
-                  <div className="text-gray-600">
+                  <div className="text-theme-muted">
                     {filePreview ? (
-                      <span className="text-purple-600 font-medium">{filePreview}</span>
+                      <span className="text-accent font-medium">{filePreview}</span>
                     ) : (
                       "Click to upload audio file (MP3, WAV, etc.)"
                     )}
                   </div>
-                  <div className="text-sm text-gray-500">Max 50MB • Supports most audio formats</div>
+                  <div className="text-sm text-theme-muted">Max 50MB • Supports most audio formats</div>
                 </div>
               </label>
             </div>
@@ -175,7 +175,7 @@ const SongForm = ({
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 flex items-center justify-center space-x-2 shadow-lg"
+            className="flex-1 bg-gradient-to-r from-accent-deep to-cyan-deep hover:from-accent-deep hover:to-cyan-deep text-theme-primary font-semibold py-3 px-6 rounded-xl transition-all duration-200 disabled:opacity-50 flex items-center justify-center space-x-2 shadow-lg"
           >
             {loading ? (
               <>
@@ -194,7 +194,7 @@ const SongForm = ({
             <button
               type="button"
               onClick={onCancel}
-              className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-xl hover:bg-gray-50 transition-colors"
+              className="px-6 py-3 border border-accent-deep/20 text-theme-secondary font-medium rounded-xl hover:bg-app-hover transition-colors"
             >
               Cancel
             </button>
