@@ -34,8 +34,8 @@ const NowPlaying = ({
 
   return (
     /* ── Outer shell: full height on desktop, natural height on mobile ── */
-    <div className="relative flex flex-col h-full min-h-0 overflow-hidden
-                    bg-[#0e0c20] rounded-3xl border border-violet-900/30">
+    <div className="relative flex flex-col h-auto lg:h-full min-h-0 overflow-hidden
+                    bg-[#0e0c20] rounded-2xl sm:rounded-3xl border border-violet-900/30">
 
       {/* ── Ambient glow orbs ── */}
       <div className="pointer-events-none absolute -top-16 -left-16 w-64 h-64
@@ -44,19 +44,19 @@ const NowPlaying = ({
                       rounded-full bg-cyan-500/10 blur-[70px]" />
 
       {/* ── Scrollable inner ── */}
-      <div className="relative z-10 flex flex-col flex-1 p-6 sm:p-8 gap-8 overflow-y-auto
+      <div className="relative z-10 flex flex-col flex-1 p-4 sm:p-6 xl:p-8 gap-4 sm:gap-6 xl:gap-8 overflow-y-auto
                       scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none]">
 
         {/* ── Album art ── */}
         <div className="flex justify-center">
           <div className="relative group">
             {/* Outer glow ring */}
-            <div className="absolute inset-0 rounded-[28px] bg-gradient-to-br
-                            from-violet-600/40 to-purple-900/0 blur-xl scale-110
+            <div className="absolute inset-0 rounded-[24px] sm:rounded-[28px] bg-gradient-to-br
+                            from-violet-600/40 to-purple-900/0 blur-lg sm:blur-xl scale-105 sm:scale-110
                             group-hover:scale-125 transition-transform duration-700" />
             {/* Art box */}
-            <div className="relative w-52 h-52 sm:w-60 sm:h-60 xl:w-64 xl:h-64
-                            rounded-[24px] overflow-hidden
+            <div className="relative w-36 h-36 min-[380px]:w-40 min-[380px]:h-40 sm:w-52 sm:h-52 xl:w-64 xl:h-64
+                            rounded-[20px] sm:rounded-[24px] overflow-hidden
                             bg-gradient-to-br from-violet-950 via-[#1a0f3a] to-[#0e0c20]
                             border border-violet-700/30
                             shadow-[0_0_40px_rgba(124,58,237,0.25)]">
@@ -66,19 +66,19 @@ const NowPlaying = ({
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-2">
                   {/* Decorative ring */}
-                  <div className="absolute inset-6 rounded-full border border-violet-700/20" />
-                  <div className="absolute inset-10 rounded-full border border-violet-600/15" />
-                  <Music2 className="w-14 h-14 text-violet-600/50" strokeWidth={1} />
+                  <div className="absolute inset-5 sm:inset-6 rounded-full border border-violet-700/20" />
+                  <div className="absolute inset-8 sm:inset-10 rounded-full border border-violet-600/15" />
+                  <Music2 className="w-10 h-10 sm:w-14 sm:h-14 text-violet-600/50" strokeWidth={1} />
                 </div>
               )}
               {/* Specular highlight */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] to-transparent
-                              rounded-[24px] pointer-events-none" />
+                              rounded-[20px] sm:rounded-[24px] pointer-events-none" />
             </div>
             {/* Like button floating on art */}
             <button
               onClick={() => setIsLiked(!isLiked)}
-              className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center
+              className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center
                           backdrop-blur-sm border transition-all duration-200
                           ${isLiked
                   ? 'bg-rose-500/20 border-rose-500/40 text-rose-400'
@@ -90,25 +90,25 @@ const NowPlaying = ({
         </div>
 
         {/* ── Track info ── */}
-        <div className="text-center space-y-1.5">
-          <p className="text-[10px] tracking-[0.2em] uppercase text-violet-400/70 font-medium">
+        <div className="text-center space-y-1 sm:space-y-1.5 min-w-0">
+          <p className="text-[9px] sm:text-[10px] tracking-[0.2em] uppercase text-violet-400/70 font-medium">
             Now Playing
           </p>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white leading-tight tracking-tight truncate">
+          <h2 className="max-w-full text-xl sm:text-2xl xl:text-3xl font-bold text-white leading-snug tracking-tight break-words">
             {currentSong?.title || 'No Track Selected'}
           </h2>
-          <p className="text-sm font-medium text-violet-300/80">
+          <p className="text-xs sm:text-sm font-medium text-violet-300/80 truncate">
             {currentSong?.artist || '—'}
           </p>
-          <p className="text-xs text-violet-500/60">
+          <p className="text-[11px] sm:text-xs text-violet-500/60 truncate">
             {currentSong?.album || ''}
           </p>
         </div>
 
         {/* ── Progress bar ── */}
         <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <span className="text-[11px] tabular-nums text-violet-400/60 w-8 text-right">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="text-[10px] sm:text-[11px] tabular-nums text-violet-400/60 w-7 sm:w-8 text-right">
               {formatTime(currentTime)}
             </span>
 
@@ -135,18 +135,18 @@ const NowPlaying = ({
               </div>
             </div>
 
-            <span className="text-[11px] tabular-nums text-violet-400/60 w-8">
+            <span className="text-[10px] sm:text-[11px] tabular-nums text-violet-400/60 w-7 sm:w-8">
               {formatTime(currentSong?.durationSeconds || 0)}
             </span>
           </div>
         </div>
 
         {/* ── Main controls ── */}
-        <div className="flex items-center justify-center gap-2 sm:gap-4">
+        <div className="flex items-center justify-center gap-1.5 min-[360px]:gap-2 sm:gap-4">
           {/* Shuffle */}
           <button
             onClick={() => setIsShuffled(!isShuffled)}
-            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200
+            className={`w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200
                         ${isShuffled
                 ? 'bg-violet-600/20 text-violet-400'
                 : 'text-violet-500/50 hover:text-violet-300 hover:bg-violet-800/20'}`}
@@ -157,7 +157,7 @@ const NowPlaying = ({
           {/* Prev */}
           <button
             onClick={playPrevious}
-            className="w-10 h-10 rounded-xl flex items-center justify-center
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center
                        text-violet-200 hover:bg-violet-800/30 transition-all duration-200
                        active:scale-95"
           >
@@ -167,7 +167,7 @@ const NowPlaying = ({
           {/* Play/Pause */}
           <button
             onClick={togglePlay}
-            className="relative w-14 h-14 rounded-2xl flex items-center justify-center
+            className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center
                        bg-gradient-to-br from-violet-500 to-purple-700
                        shadow-[0_0_28px_rgba(124,58,237,0.5)]
                        hover:shadow-[0_0_36px_rgba(124,58,237,0.65)]
@@ -176,14 +176,14 @@ const NowPlaying = ({
           >
             <div className="absolute inset-0 bg-gradient-to-br from-white/15 to-transparent" />
             {isPlaying
-              ? <Pause className="w-6 h-6 text-white relative z-10" fill="currentColor" />
-              : <Play className="w-6 h-6 text-white relative z-10 ml-0.5" fill="currentColor" />}
+              ? <Pause className="w-5 h-5 sm:w-6 sm:h-6 text-white relative z-10" fill="currentColor" />
+              : <Play className="w-5 h-5 sm:w-6 sm:h-6 text-white relative z-10 ml-0.5" fill="currentColor" />}
           </button>
 
           {/* Next */}
           <button
             onClick={playNext}
-            className="w-10 h-10 rounded-xl flex items-center justify-center
+            className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center
                        text-violet-200 hover:bg-violet-800/30 transition-all duration-200
                        active:scale-95"
           >
@@ -193,7 +193,7 @@ const NowPlaying = ({
           {/* Repeat */}
           <button
             onClick={cycleRepeat}
-            className={`relative w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200
+            className={`relative w-8 h-8 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center transition-all duration-200
                         ${repeatMode !== 'off'
                 ? 'bg-violet-600/20 text-violet-400'
                 : 'text-violet-500/50 hover:text-violet-300 hover:bg-violet-800/20'}`}
@@ -210,7 +210,7 @@ const NowPlaying = ({
         </div>
 
         {/* ── Volume ── */}
-        <div className="flex items-center gap-3 px-2">
+        <div className="flex items-center gap-2 sm:gap-3 px-0 sm:px-2">
           <button
             onClick={toggleMute}
             className="text-violet-500/60 hover:text-violet-300 transition-colors flex-shrink-0"
@@ -254,7 +254,7 @@ const NowPlaying = ({
             />
           </div>
 
-          <span className="text-[11px] tabular-nums text-violet-500/60 w-7 text-right">
+          <span className="text-[10px] sm:text-[11px] tabular-nums text-violet-500/60 w-6 sm:w-7 text-right">
             {Math.round((isMuted ? 0 : volume) * 100)}
           </span>
         </div>
