@@ -1,226 +1,347 @@
-import React, { useState, useMemo } from 'react';
-import { Heart, Maximize2, Minimize2, Music2, Play, Pause, Search, X } from 'lucide-react';
+import { useState, useMemo, useRef } from 'react';
+import {
+  Heart, Music2, Play, Pause,
+  Search, X, ListMusic, Clock3
+} from 'lucide-react';
 
-const SongsList = ({ 
-  songs = [], 
-  currentSong, 
-  isPlaying, 
-  playSong, 
-  formatTime, 
-  isFullscreen, 
-  toggleFullscreen,
-  isLoading = false
+/* ── Animated waveform for active+playing row ── */
+const WaveBars = () => (
+  <div className="flex items-center gap-[3px] h-4">
+    {[0, 150, 300, 75].map((delay, i) => (
+      <span
+        key={i}
+        className="inline-block w-[3px] rounded-full bg-violet-500"
+        style={{
+          animation: `bb-wave 0.8s ease-in-out ${delay}ms infinite alternate`,
+          height: 14,
+        }}
+      />
+    ))}
+    <style>{`
+      @keyframes bb-wave {
+        from { transform: scaleY(0.25); }
+        to   { transform: scaleY(1); }
+      }
+    `}</style>
+  </div>
+);
+
+const SongsList = ({
+  songs = [],
+  currentSong,
+  isPlaying,
+  playSong,
+  formatTime,
+  isLoading = false,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [query, setQuery] = useState('');
+  const [likedIds, setLikedIds] = useState(new Set());
+  const inputRef = useRef(null);
 
-  // Filter songs based on search query
-  const filteredSongs = useMemo(() => {
-    if (!searchQuery.trim()) return songs;
-    
-    const query = searchQuery.toLowerCase();
-    return songs.filter(song => 
-      song.title?.toLowerCase().includes(query) ||
-      song.artist?.toLowerCase().includes(query) ||
-      song.album?.toLowerCase().includes(query)
+  const filtered = useMemo(() => {
+    if (!query.trim()) return songs;
+    const q = query.toLowerCase();
+    return songs.filter(s =>
+      s.title?.toLowerCase().includes(q) ||
+      s.artist?.toLowerCase().includes(q) ||
+      s.album?.toLowerCase().includes(q)
     );
-  }, [songs, searchQuery]);
+  }, [songs, query]);
 
-  const clearSearch = () => setSearchQuery('');
+  const toggleLike = (e, id) => {
+    e.stopPropagation();
+    setLikedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   return (
-    <div className="app-panel-gradient text-theme-primary rounded-xl overflow-hidden flex flex-col h-[calc(100vh-2rem)] md:h-auto md:max-h-[80vh]">
-      {/* Header */}
-      <div className="flex-shrink-0 sticky top-0 z-10 app-sticky-header px-4 md:px-6 py-3 md:py-4">
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-accent to-accent-bright rounded-lg flex items-center justify-center">
-              <Music2 className="w-4 h-4 md:w-5 md:h-5" />
+    <div className="relative flex flex-col h-full min-h-0 overflow-hidden
+                    bg-[#0e0c20] rounded-3xl border border-violet-900/30">
+
+      {/* ── Subtle glow ── */}
+      <div className="pointer-events-none absolute top-0 right-0 w-72 h-40
+                      bg-violet-800/10 blur-[60px] rounded-full" />
+
+      {/* ── Sticky Header ── */}
+      <div className="relative z-20 flex-shrink-0 px-5 pt-5 pb-4
+                      border-b border-violet-900/30
+                      bg-[#0e0c20]/95 backdrop-blur-sm">
+
+        {/* Title row */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl flex items-center justify-center
+                            bg-gradient-to-br from-violet-600 to-purple-800
+                            shadow-[0_0_12px_rgba(124,58,237,0.4)]">
+              <ListMusic className="w-4 h-4 text-white" />
             </div>
             <div>
-              <h2 className="text-lg md:text-xl font-bold">Your Library</h2>
-              <p className="text-xs md:text-sm text-theme-muted">
-                {isLoading ? 'Loading...' : `${filteredSongs.length} ${filteredSongs.length === 1 ? 'song' : 'songs'}`}
+              <h2 className="text-sm font-bold text-white tracking-wide">Library</h2>
+              <p className="text-[11px] text-violet-500/70 leading-none mt-0.5">
+                {isLoading ? 'Loading…' : `${filtered.length} of ${songs.length} songs`}
               </p>
             </div>
           </div>
-          <button
-            onClick={toggleFullscreen}
-            className="p-1.5 md:p-2 hover:bg-app-elevated rounded-lg transition-colors"
-            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-          >
-            {isFullscreen ? <Minimize2 className="w-4 h-4 md:w-5 md:h-5" /> : <Maximize2 className="w-4 h-4 md:w-5 md:h-5" />}
-          </button>
-        </div>
 
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-muted" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by title, artist, or album..."
-            className="app-input w-full rounded-lg pl-10 pr-10 py-2 text-sm text-theme-primary  focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent/50 transition-all"
-          />
-          {searchQuery && (
-            <button
-              onClick={clearSearch}
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-app-hover rounded-full transition-colors"
-              aria-label="Clear search"
-            >
-              <X className="w-3 h-3 text-theme-muted" />
-            </button>
+          {query && (
+            <span className="text-[10px] text-violet-400/60 bg-violet-900/30
+                             px-2 py-0.5 rounded-full border border-violet-800/30">
+              {filtered.length} result{filtered.length !== 1 ? 's' : ''}
+            </span>
           )}
         </div>
+
+        {/* ── Search box ── */}
+        <div className="relative flex items-center group">
+          {/* Glow ring on focus */}
+          <div className="absolute inset-0 rounded-xl bg-violet-600/0
+                          group-focus-within:bg-violet-600/10
+                          transition-colors duration-300 -z-10 blur-sm scale-105" />
+
+          <Search
+            className="absolute left-3.5 w-3.5 h-3.5 text-violet-500/50
+                       group-focus-within:text-violet-400 transition-colors duration-200"
+          />
+
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            placeholder="Search tracks, artists, albums…"
+            className="w-full pl-9 pr-9 py-2.5
+                       bg-violet-950/60 hover:bg-violet-950/80
+                       border border-violet-800/30
+                       hover:border-violet-700/40
+                       focus:border-violet-500/60
+                       focus:bg-[#1a1535]
+                       focus:shadow-[0_0_0_3px_rgba(124,58,237,0.12),0_0_20px_rgba(124,58,237,0.07)]
+                       rounded-xl
+                       text-[13px] text-violet-100
+                       placeholder:text-violet-600/50
+                       outline-none
+                       transition-all duration-250
+                       caret-violet-400"
+          />
+
+          {/* Clear button */}
+          {query ? (
+            <button
+              onClick={() => { setQuery(''); inputRef.current?.focus(); }}
+              className="absolute right-2.5 w-5 h-5 rounded-md
+                         flex items-center justify-center
+                         text-violet-500/60 hover:text-violet-300
+                         bg-violet-900/0 hover:bg-violet-800/40
+                         transition-all duration-150"
+            >
+              <X className="w-3 h-3" />
+            </button>
+          ) : (
+            <kbd className="absolute right-3 text-[10px] text-violet-600/40
+                            font-mono select-none hidden sm:block">
+              /
+            </kbd>
+          )}
+        </div>
+
+        {/* Keyboard shortcut hint */}
+        <p className="text-[10px] text-violet-600/30 mt-1.5 pl-1 hidden sm:block">
+          Press <span className="font-mono">/</span> to search
+        </p>
       </div>
 
-      {/* Loading State */}
-      {isLoading ? (
-        <div className="flex-1 overflow-y-auto px-2 py-2">
-          {[...Array(8)].map((_, i) => (
-            <div key={i} className="px-4 py-2 md:py-3 mb-1">
-              <div className="flex items-center gap-3">
-                <div className="w-6 h-6 bg-app-elevated rounded animate-pulse"></div>
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-app-elevated rounded animate-pulse"></div>
-                <div className="flex-1 space-y-2">
-                  <div className="h-4 bg-app-elevated rounded w-3/4 animate-pulse"></div>
-                  <div className="h-3 bg-app-elevated rounded w-1/2 animate-pulse"></div>
-                </div>
-                <div className="hidden md:block w-32 h-3 bg-app-elevated rounded animate-pulse"></div>
-                <div className="w-10 h-3 bg-app-elevated rounded animate-pulse"></div>
-              </div>
-            </div>
-          ))}
-        </div>
-      ) : songs.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center py-12 md:py-20 px-6">
-          <div className="w-16 h-16 md:w-20 md:h-20 bg-app-elevated rounded-full flex items-center justify-center mb-4">
-            <Music2 className="w-8 h-8 md:w-10 md:h-10 text-theme-disabled" />
-          </div>
-          <h3 className="text-lg md:text-xl font-semibold mb-2">No songs yet</h3>
-          <p className="text-sm md:text-base text-theme-muted text-center">Add some music to get started</p>
-        </div>
-      ) : filteredSongs.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center py-12 md:py-20 px-6">
-          <div className="w-16 h-16 md:w-20 md:h-20 bg-app-elevated rounded-full flex items-center justify-center mb-4">
-            <Search className="w-8 h-8 md:w-10 md:h-10 text-theme-disabled" />
-          </div>
-          <h3 className="text-lg md:text-xl font-semibold mb-2">No results found</h3>
-          <p className="text-sm md:text-base text-theme-muted text-center mb-4">
-            No songs match "{searchQuery}"
-          </p>
-          <button
-            onClick={clearSearch}
-            className="px-4 py-2 bg-accent/20 hover:bg-accent/30 text-accent-soft rounded-lg transition-colors text-sm font-medium"
-          >
-            Clear search
-          </button>
-        </div>
-      ) : (
-        <>
-          {/* Column Headers - Desktop only */}
-          <div className="flex-shrink-0 hidden md:grid grid-cols-[40px_1fr_1fr_80px_60px] gap-4 px-6 py-2 text-xs text-theme-muted border-b border-accent/50">
-            <div className="text-center">#</div>
-            <div>Title</div>
-            <div>Album</div>
-            <div className="text-center">Duration</div>
-            <div></div>
-          </div>
+      {/* ── Column headers ── */}
+      <div className="flex-shrink-0 grid grid-cols-[36px_1fr_100px_56px]
+                      lg:grid-cols-[36px_1fr_1fr_80px_44px]
+                      gap-2 px-5 py-2
+                      text-[10px] uppercase tracking-[0.12em]
+                      text-violet-600/50 font-medium
+                      border-b border-violet-900/20">
+        <span className="text-center">#</span>
+        <span>Title</span>
+        <span className="hidden lg:block">Album</span>
+        <span className="flex items-center gap-1">
+          <Clock3 className="w-3 h-3" />
+        </span>
+        <span className="hidden lg:block" />
+      </div>
 
-          {/* Songs List */}
-          <div className="flex-1 overflow-y-auto px-2 py-2 scrollbar-thin scrollbar-thumb-elevated scrollbar-track-transparent">
-            {filteredSongs.map((song, index) => {
-              const isActive = currentSong?.id === song.id;
-              
-              return (
-                <div
-                  key={song.id}
-                  onClick={() => playSong(song)}
+      {/* ── Song rows ── */}
+      <div className="flex-1 overflow-y-auto min-h-0
+                      scrollbar-thin scrollbar-track-transparent
+                      scrollbar-thumb-violet-900/60
+                      hover:scrollbar-thumb-violet-800/80
+                      [scrollbar-width:thin]
+                      [scrollbar-color:rgba(91,33,182,0.4)_transparent]
+                      px-2 py-1.5">
+
+        {/* Loading skeleton */}
+        {isLoading && (
+          <div className="space-y-1 p-2">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl">
+                <div className="w-5 h-3 rounded bg-violet-900/60 animate-pulse" />
+                <div className="w-6 h-6 rounded-lg bg-violet-900/60 animate-pulse flex-shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-2.5 rounded bg-violet-900/50 animate-pulse w-2/3" />
+                  <div className="h-2 rounded bg-violet-900/40 animate-pulse w-1/3" />
+                </div>
+                <div className="w-8 h-2.5 rounded bg-violet-900/40 animate-pulse" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Empty library */}
+        {!isLoading && songs.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full gap-3 py-16">
+            <div className="w-14 h-14 rounded-2xl bg-violet-900/30 border border-violet-800/30
+                            flex items-center justify-center">
+              <Music2 className="w-7 h-7 text-violet-600/50" strokeWidth={1.2} />
+            </div>
+            <p className="text-sm font-medium text-violet-400/60">No songs yet</p>
+            <p className="text-xs text-violet-600/40">Add some music to get started</p>
+          </div>
+        )}
+
+        {/* No search results */}
+        {!isLoading && songs.length > 0 && filtered.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-full gap-3 py-16">
+            <div className="w-14 h-14 rounded-2xl bg-violet-900/30 border border-violet-800/30
+                            flex items-center justify-center">
+              <Search className="w-7 h-7 text-violet-600/50" strokeWidth={1.2} />
+            </div>
+            <p className="text-sm font-medium text-violet-400/60">No results</p>
+            <p className="text-xs text-violet-600/40 text-center max-w-[180px]">
+              Nothing matches "{query}"
+            </p>
+            <button
+              onClick={() => setQuery('')}
+              className="mt-1 px-3 py-1.5 rounded-lg text-xs font-medium
+                         bg-violet-600/15 hover:bg-violet-600/25
+                         text-violet-400 border border-violet-700/30
+                         transition-colors duration-150"
+            >
+              Clear search
+            </button>
+          </div>
+        )}
+
+        {/* Actual list */}
+        {!isLoading && filtered.map((song, index) => {
+          const isActive = currentSong?.id === song.id;
+          const isLiked = likedIds.has(song.id);
+
+          return (
+            <div
+              key={song.id}
+              onClick={() => playSong(song)}
+              className={`
+                group relative
+                grid grid-cols-[36px_1fr_100px_56px]
+                lg:grid-cols-[36px_1fr_1fr_80px_44px]
+                gap-2 items-center
+                px-3 py-2 mb-0.5 rounded-xl cursor-pointer
+                transition-all duration-150 select-none
+                ${isActive
+                  ? 'bg-violet-600/[0.13] hover:bg-violet-600/[0.18]'
+                  : 'hover:bg-violet-900/25'
+                }
+              `}
+            >
+              {/* Left active bar */}
+              {isActive && (
+                <div className="absolute left-0 top-1/2 -translate-y-1/2
+                                w-[3px] h-6 rounded-r-full
+                                bg-gradient-to-b from-violet-500 to-purple-600" />
+              )}
+
+              {/* Index / wave */}
+              <div className="flex items-center justify-center h-8">
+                {isActive && isPlaying ? (
+                  <WaveBars />
+                ) : (
+                  <div className="relative w-5 h-5 flex items-center justify-center">
+                    <span className={`
+                      text-[12px] font-medium tabular-nums
+                      transition-all duration-150
+                      group-hover:opacity-0
+                      ${isActive ? 'text-violet-400' : 'text-violet-600/50'}
+                    `}>
+                      {index + 1}
+                    </span>
+                    <Play
+                      className="absolute w-3 h-3 text-white
+                                 opacity-0 group-hover:opacity-100
+                                 transition-opacity duration-150"
+                      fill="currentColor"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Song info */}
+              <div className="flex items-center gap-2.5 min-w-0">
+                {/* Thumb */}
+                <div className={`
+                  w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center
+                  transition-all duration-200
+                  ${isActive
+                    ? 'bg-gradient-to-br from-violet-700/60 to-purple-900/60 border border-violet-600/40'
+                    : 'bg-violet-950/70 group-hover:bg-violet-900/50'}
+                `}>
+                  <Music2 className={`w-3.5 h-3.5 transition-colors duration-200
+                                     ${isActive ? 'text-violet-400' : 'text-violet-600/60'}`} />
+                </div>
+
+                <div className="min-w-0">
+                  <p className={`
+                    text-[13px] font-medium leading-tight truncate transition-colors duration-150
+                    ${isActive ? 'text-violet-300' : 'text-violet-100 group-hover:text-white'}
+                  `}>
+                    {song.title}
+                  </p>
+                  <p className="text-[11px] text-violet-500/80 truncate mt-0.5">
+                    {song.artist}
+                  </p>
+                </div>
+              </div>
+
+              {/* Album — desktop only */}
+              <p className="hidden lg:block text-[12px] text-violet-500/60 truncate">
+                {song.album || '—'}
+              </p>
+
+              {/* Duration */}
+              <p className="text-[12px] tabular-nums text-violet-500/60 text-center">
+                {formatTime(song.durationSeconds)}
+              </p>
+
+              {/* Like — desktop only */}
+              <div className="hidden lg:flex items-center justify-center">
+                <button
+                  onClick={e => toggleLike(e, song.id)}
                   className={`
-                    group relative grid grid-cols-[32px_1fr_auto] md:grid-cols-[40px_1fr_1fr_80px_60px] 
-                    gap-2 md:gap-4 px-3 md:px-4 py-2 md:py-3 mb-1 rounded-lg cursor-pointer transition-all
-                    ${isActive 
-                      ? 'app-row-active' 
-                      : 'app-row hover:bg-app-hover'
-                    }
+                    w-7 h-7 rounded-lg flex items-center justify-center
+                    transition-all duration-150
+                    ${isLiked
+                      ? 'text-rose-400 bg-rose-500/10'
+                      : 'text-violet-600/0 group-hover:text-violet-500/50 hover:!text-rose-400 hover:!bg-rose-500/10'}
                   `}
                 >
-                  {/* Song Number / Playing Indicator */}
-                  <div className="flex items-center justify-center">
-                    {isActive && isPlaying ? (
-                      <div className="flex items-center gap-0.5">
-                        <span className="w-0.5 md:w-1 h-2 md:h-3 bg-accent rounded-full animate-pulse" style={{ animationDelay: '0ms' }}></span>
-                        <span className="w-0.5 md:w-1 h-3 md:h-4 bg-accent rounded-full animate-pulse" style={{ animationDelay: '150ms' }}></span>
-                        <span className="w-0.5 md:w-1 h-1.5 md:h-2 bg-accent rounded-full animate-pulse" style={{ animationDelay: '300ms' }}></span>
-                      </div>
-                    ) : (
-                      <div className="relative w-4 h-4 md:w-5 md:h-5 flex items-center justify-center">
-                        <span className={`
-                          transition-opacity text-xs md:text-sm font-medium
-                          ${isActive ? 'text-accent-soft' : 'text-theme-muted group-hover:opacity-0'}
-                        `}>
-                          {index + 1}
-                        </span>
-                        <Play 
-                          className="absolute inset-0 w-3 h-3 md:w-4 md:h-4 m-auto opacity-0 group-hover:opacity-100 transition-opacity text-theme-primary" 
-                          fill="currentColor"
-                        />
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Song Info */}
-                  <div className="flex items-center gap-2 md:gap-3 min-w-0">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-elevated to-card rounded flex items-center justify-center flex-shrink-0">
-                      <Music2 className="w-4 h-4 md:w-5 md:h-5 text-theme-muted" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className={`
-                        text-sm md:text-base font-medium truncate
-                        ${isActive ? 'text-accent-soft' : 'text-theme-primary'}
-                      `}>
-                        {song.title}
-                      </div>
-                      <div className="text-xs md:text-sm text-theme-muted truncate">
-                        {song.artist}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Album - Hidden on mobile */}
-                  <div className="hidden md:flex items-center text-sm text-theme-muted truncate">
-                    {song.album}
-                  </div>
-
-                  {/* Duration */}
-                  <div className="flex items-center justify-center text-xs md:text-sm text-theme-muted">
-                    {formatTime(song.durationSeconds)}
-                  </div>
-
-                  {/* Favorite Button */}
-                  <div className="hidden md:flex items-center justify-center">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        // Add favorite functionality here
-                      }}
-                      className="p-2 hover:bg-app-hover/50 rounded-full transition-colors opacity-0 group-hover:opacity-100"
-                      aria-label="Add to favorites"
-                    >
-                      <Heart className="w-4 h-4 hover:text-danger transition-colors" />
-                    </button>
-                  </div>
-
-                  {/* Active Song Indicator */}
-                  {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 md:w-1 h-6 md:h-8 bg-gradient-to-b from-accent to-accent-bright rounded-r-full"></div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </>
-      )}
+                  <Heart
+                    className="w-3.5 h-3.5 transition-all"
+                    fill={isLiked ? 'currentColor' : 'none'}
+                  />
+                </button>
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 };

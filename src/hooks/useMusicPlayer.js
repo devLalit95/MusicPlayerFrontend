@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { apiClient, authHeaders } from '../services/api';
 import { getApiErrorMessage } from '../utils/errors';
 
@@ -14,6 +14,44 @@ export function useMusicPlayer() {
 
   const audioRef = useRef(null);
   const progressBarRef = useRef(null);
+
+  const handlePlaybackError = useCallback((err) => {
+    if (err?.name === 'AbortError') return;
+
+    setSongsError('Unable to play this track. The audio file may be unavailable.');
+    setIsPlaying(false);
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return undefined;
+
+    if (!currentSong) {
+      audio.pause();
+      setCurrentTime(0);
+      return undefined;
+    }
+
+    if (!isPlaying) {
+      audio.pause();
+      return undefined;
+    }
+
+    let ignoreResult = false;
+    const playPromise = audio.play();
+
+    playPromise
+      ?.then(() => {
+        if (!ignoreResult) setSongsError('');
+      })
+      .catch((err) => {
+        if (!ignoreResult) handlePlaybackError(err);
+      });
+
+    return () => {
+      ignoreResult = true;
+    };
+  }, [currentSong, isPlaying, handlePlaybackError]);
 
   const fetchSongs = useCallback(async (token) => {
     if (!token) {
@@ -45,31 +83,25 @@ export function useMusicPlayer() {
     if (!currentSong || !audioRef.current) return;
 
     if (isPlaying) {
-      audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current
-        .play()
-        .then(() => setIsPlaying(true))
-        .catch(() => {
-          setSongsError('Unable to play this track. The audio file may be unavailable.');
-          setIsPlaying(false);
-        });
+      setSongsError('');
+      setIsPlaying(true);
     }
   }, [currentSong, isPlaying]);
 
   const playSong = useCallback((song) => {
-    setCurrentSong(song);
-    setIsPlaying(true);
+    if (!song?.fileUrl) {
+      setCurrentSong(song ?? null);
+      setIsPlaying(false);
+      setSongsError('Unable to play this track. The audio file may be unavailable.');
+      return;
+    }
 
-    queueMicrotask(() => {
-      audioRef.current
-        ?.play()
-        .catch(() => {
-          setSongsError('Unable to play this track. The audio file may be unavailable.');
-          setIsPlaying(false);
-        });
-    });
+    setCurrentSong(song);
+    setCurrentTime(0);
+    setSongsError('');
+    setIsPlaying(true);
   }, []);
 
   const playNext = useCallback(() => {

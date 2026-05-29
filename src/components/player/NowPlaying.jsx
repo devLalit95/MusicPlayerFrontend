@@ -1,16 +1,7 @@
 import { useState } from 'react';
-import { 
-  Play, 
-  Pause, 
-  SkipForward, 
-  SkipBack, 
-  Volume2, 
-  VolumeX, 
-  Shuffle, 
-  Repeat,
-  Music2,
-  Maximize2,
-  Minimize2
+import {
+  Play, Pause, SkipForward, SkipBack,
+  Volume2, VolumeX, Shuffle, Repeat, Music2, Heart
 } from 'lucide-react';
 
 const NowPlaying = ({
@@ -26,230 +17,250 @@ const NowPlaying = ({
   handleProgressClick,
   handleVolumeChange,
   toggleMute,
-  toggleFullscreen,
-  isFullscreen,
-  formatTime
+  formatTime,
 }) => {
   const [isShuffled, setIsShuffled] = useState(false);
-  const [repeatMode, setRepeatMode] = useState('off'); // 'off', 'all', 'one'
+  const [repeatMode, setRepeatMode] = useState('off');
+  const [isLiked, setIsLiked] = useState(false);
 
-  const progress = currentSong?.durationSeconds 
-    ? (currentTime / currentSong.durationSeconds) * 100 
+  const progress = currentSong?.durationSeconds
+    ? (currentTime / currentSong.durationSeconds) * 100
     : 0;
 
+  const cycleRepeat = () => {
+    const modes = ['off', 'all', 'one'];
+    setRepeatMode(modes[(modes.indexOf(repeatMode) + 1) % modes.length]);
+  };
+
   return (
-    <section className="app-panel-gradient text-theme-primary rounded-xl overflow-hidden">
-      {/* Album Art & Track Info */}
-      <div className="p-6 md:p-8">
-        <div className="flex flex-col items-center">
-          {/* Album Art */}
-          <div className="relative group mb-6">
-            <div className="w-64 h-64 md:w-80 md:h-80 rounded-2xl bg-gradient-to-br from-accent/20 via-accent-bright/20 to-accent/20 flex items-center justify-center shadow-2xl shadow-accent/20 backdrop-blur-sm border border-accent-deep/40">
+    /* ── Outer shell: full height on desktop, natural height on mobile ── */
+    <div className="relative flex flex-col h-full min-h-0 overflow-hidden
+                    bg-[#0e0c20] rounded-3xl border border-violet-900/30">
+
+      {/* ── Ambient glow orbs ── */}
+      <div className="pointer-events-none absolute -top-16 -left-16 w-64 h-64
+                      rounded-full bg-violet-600/20 blur-[80px]" />
+      <div className="pointer-events-none absolute bottom-0 right-8 w-48 h-48
+                      rounded-full bg-cyan-500/10 blur-[70px]" />
+
+      {/* ── Scrollable inner ── */}
+      <div className="relative z-10 flex flex-col flex-1 p-6 sm:p-8 gap-8 overflow-y-auto
+                      scrollbar-none [scrollbar-width:none] [-ms-overflow-style:none]">
+
+        {/* ── Album art ── */}
+        <div className="flex justify-center">
+          <div className="relative group">
+            {/* Outer glow ring */}
+            <div className="absolute inset-0 rounded-[28px] bg-gradient-to-br
+                            from-violet-600/40 to-purple-900/0 blur-xl scale-110
+                            group-hover:scale-125 transition-transform duration-700" />
+            {/* Art box */}
+            <div className="relative w-52 h-52 sm:w-60 sm:h-60 xl:w-64 xl:h-64
+                            rounded-[24px] overflow-hidden
+                            bg-gradient-to-br from-violet-950 via-[#1a0f3a] to-[#0e0c20]
+                            border border-violet-700/30
+                            shadow-[0_0_40px_rgba(124,58,237,0.25)]">
               {currentSong?.albumArt ? (
-                <img 
-                  src={currentSong.albumArt} 
-                  alt={currentSong.title}
-                  className="w-full h-full object-cover rounded-2xl"
-                />
+                <img src={currentSong.albumArt} alt={currentSong.title}
+                  className="w-full h-full object-cover" />
               ) : (
-                <div className="text-center">
-                  <Music2 className="w-24 h-24 md:w-32 md:h-32 text-theme-disabled mx-auto mb-4" />
-                  <span className="text-6xl md:text-7xl font-bold text-theme-disabled">
-                    {currentSong?.artist?.charAt(0)?.toUpperCase() || 'A'}
-                  </span>
+                <div className="w-full h-full flex flex-col items-center justify-center gap-2">
+                  {/* Decorative ring */}
+                  <div className="absolute inset-6 rounded-full border border-violet-700/20" />
+                  <div className="absolute inset-10 rounded-full border border-violet-600/15" />
+                  <Music2 className="w-14 h-14 text-violet-600/50" strokeWidth={1} />
                 </div>
               )}
+              {/* Specular highlight */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.04] to-transparent
+                              rounded-[24px] pointer-events-none" />
             </div>
-            
-            {/* Vinyl Effect */}
-            <div className="absolute inset-0 rounded-2xl bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-          </div>
-
-          {/* Track Info */}
-          <div className="text-center mb-6 w-full max-w-md">
-            <h2 className="text-2xl md:text-3xl font-bold mb-2 truncate bg-gradient-to-r from-fg-primary to-fg-muted bg-clip-text text-transparent">
-              {currentSong?.title || 'No Track Playing'}
-            </h2>
-            <p className="text-base md:text-lg text-theme-muted mb-1 truncate">
-              {currentSong?.artist || 'Unknown Artist'}
-            </p>
-            <p className="text-sm text-theme-disabled truncate">
-              {currentSong?.album || 'Unknown Album'}
-            </p>
+            {/* Like button floating on art */}
+            <button
+              onClick={() => setIsLiked(!isLiked)}
+              className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center
+                          backdrop-blur-sm border transition-all duration-200
+                          ${isLiked
+                  ? 'bg-rose-500/20 border-rose-500/40 text-rose-400'
+                  : 'bg-black/30 border-white/10 text-white/40 hover:text-white/70'}`}
+            >
+              <Heart className="w-3.5 h-3.5" fill={isLiked ? 'currentColor' : 'none'} />
+            </button>
           </div>
         </div>
 
-        {/* Progress Bar */}
-        <div className="mb-6">
+        {/* ── Track info ── */}
+        <div className="text-center space-y-1.5">
+          <p className="text-[10px] tracking-[0.2em] uppercase text-violet-400/70 font-medium">
+            Now Playing
+          </p>
+          <h2 className="text-2xl sm:text-3xl font-bold text-white leading-tight tracking-tight truncate">
+            {currentSong?.title || 'No Track Selected'}
+          </h2>
+          <p className="text-sm font-medium text-violet-300/80">
+            {currentSong?.artist || '—'}
+          </p>
+          <p className="text-xs text-violet-500/60">
+            {currentSong?.album || ''}
+          </p>
+        </div>
+
+        {/* ── Progress bar ── */}
+        <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <span className="text-xs md:text-sm text-theme-muted font-medium min-w-[40px] text-right">
+            <span className="text-[11px] tabular-nums text-violet-400/60 w-8 text-right">
               {formatTime(currentTime)}
             </span>
-            
-            <div 
-              className="flex-1 h-2 bg-app-elevated rounded-full cursor-pointer group relative overflow-hidden"
+
+            {/* Track */}
+            <div
               ref={progressBarRef}
               onClick={handleProgressClick}
+              className="flex-1 h-1 bg-violet-950/80 rounded-full cursor-pointer group relative"
             >
-              {/* Progress Fill */}
-              <div 
-                className="absolute inset-y-0 left-0 bg-gradient-to-r from-accent to-accent-bright rounded-full transition-all duration-100"
+              <div
+                className="absolute inset-y-0 left-0 rounded-full
+                           bg-gradient-to-r from-violet-600 to-purple-400
+                           transition-[width] duration-100"
                 style={{ width: `${progress}%` }}
               >
-                {/* Animated Glow */}
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 bg-app-card rounded-full shadow-lg shadow-accent/50 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                {/* Knob */}
+                <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2
+                                w-3.5 h-3.5 rounded-full bg-white
+                                shadow-[0_0_8px_rgba(167,139,250,0.8)]
+                                border-2 border-violet-400
+                                opacity-0 group-hover:opacity-100
+                                scale-75 group-hover:scale-100
+                                transition-all duration-150" />
               </div>
-              
-              {/* Hover Effect */}
-              <div className="absolute inset-0 bg-gradient-to-r from-accent/20 to-accent-bright/20 opacity-0 group-hover:opacity-100 transition-opacity rounded-full"></div>
             </div>
-            
-            <span className="text-xs md:text-sm text-theme-muted font-medium min-w-[40px]">
+
+            <span className="text-[11px] tabular-nums text-violet-400/60 w-8">
               {formatTime(currentSong?.durationSeconds || 0)}
             </span>
           </div>
         </div>
 
-        {/* Main Controls */}
-        <div className="flex items-center justify-center gap-4 md:gap-6 mb-6">
+        {/* ── Main controls ── */}
+        <div className="flex items-center justify-center gap-2 sm:gap-4">
           {/* Shuffle */}
           <button
             onClick={() => setIsShuffled(!isShuffled)}
-            className={`p-2 md:p-3 rounded-full transition-all duration-200 ${
-              isShuffled 
-                ? 'bg-accent/20 text-accent-soft hover:bg-accent/30' 
-                : 'text-theme-muted hover:text-theme-primary hover:bg-app-hover'
-            }`}
-            aria-label="Shuffle"
+            className={`w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200
+                        ${isShuffled
+                ? 'bg-violet-600/20 text-violet-400'
+                : 'text-violet-500/50 hover:text-violet-300 hover:bg-violet-800/20'}`}
           >
-            <Shuffle className="w-4 h-4 md:w-5 md:h-5" />
+            <Shuffle className="w-4 h-4" />
           </button>
 
-          {/* Previous */}
+          {/* Prev */}
           <button
             onClick={playPrevious}
-            className="p-3 md:p-4 rounded-full text-theme-primary hover:bg-app-hover transition-all duration-200 hover:scale-110 active:scale-95"
-            aria-label="Previous"
+            className="w-10 h-10 rounded-xl flex items-center justify-center
+                       text-violet-200 hover:bg-violet-800/30 transition-all duration-200
+                       active:scale-95"
           >
-            <SkipBack className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" />
+            <SkipBack className="w-5 h-5" fill="currentColor" />
           </button>
 
           {/* Play/Pause */}
           <button
             onClick={togglePlay}
-            className="p-5 md:p-6 rounded-full bg-gradient-to-r from-accent to-accent-bright text-theme-primary hover:from-accent hover:to-accent-bright transition-all duration-200 shadow-lg shadow-accent/30 hover:shadow-accent/50 hover:scale-110 active:scale-95"
-            aria-label={isPlaying ? 'Pause' : 'Play'}
+            className="relative w-14 h-14 rounded-2xl flex items-center justify-center
+                       bg-gradient-to-br from-violet-500 to-purple-700
+                       shadow-[0_0_28px_rgba(124,58,237,0.5)]
+                       hover:shadow-[0_0_36px_rgba(124,58,237,0.65)]
+                       hover:scale-105 active:scale-95
+                       transition-all duration-200 overflow-hidden"
           >
-            {isPlaying ? (
-              <Pause className="w-6 h-6 md:w-8 md:h-8" fill="currentColor" />
-            ) : (
-              <Play className="w-6 h-6 md:w-8 md:h-8 ml-1" fill="currentColor" />
-            )}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/15 to-transparent" />
+            {isPlaying
+              ? <Pause className="w-6 h-6 text-white relative z-10" fill="currentColor" />
+              : <Play className="w-6 h-6 text-white relative z-10 ml-0.5" fill="currentColor" />}
           </button>
 
           {/* Next */}
           <button
             onClick={playNext}
-            className="p-3 md:p-4 rounded-full text-theme-primary hover:bg-app-hover transition-all duration-200 hover:scale-110 active:scale-95"
-            aria-label="Next"
+            className="w-10 h-10 rounded-xl flex items-center justify-center
+                       text-violet-200 hover:bg-violet-800/30 transition-all duration-200
+                       active:scale-95"
           >
-            <SkipForward className="w-5 h-5 md:w-6 md:h-6" fill="currentColor" />
+            <SkipForward className="w-5 h-5" fill="currentColor" />
           </button>
 
           {/* Repeat */}
           <button
-            onClick={() => {
-              const modes = ['off', 'all', 'one'];
-              const currentIndex = modes.indexOf(repeatMode);
-              setRepeatMode(modes[(currentIndex + 1) % modes.length]);
-            }}
-            className={`p-2 md:p-3 rounded-full transition-all duration-200 relative ${
-              repeatMode !== 'off'
-                ? 'bg-accent/20 text-accent-soft hover:bg-accent/30' 
-                : 'text-theme-muted hover:text-theme-primary hover:bg-app-hover'
-            }`}
-            aria-label="Repeat"
+            onClick={cycleRepeat}
+            className={`relative w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-200
+                        ${repeatMode !== 'off'
+                ? 'bg-violet-600/20 text-violet-400'
+                : 'text-violet-500/50 hover:text-violet-300 hover:bg-violet-800/20'}`}
           >
-            <Repeat className="w-4 h-4 md:w-5 md:h-5" />
+            <Repeat className="w-4 h-4" />
             {repeatMode === 'one' && (
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-accent rounded-full flex items-center justify-center text-[10px] font-bold">
+              <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full
+                               bg-violet-600 text-white text-[8px] font-bold
+                               flex items-center justify-center">
                 1
               </span>
             )}
           </button>
         </div>
 
-        {/* Volume Control & Fullscreen */}
-        <div className="flex items-center justify-between gap-4">
-          {/* Volume Control */}
-          <div className="flex items-center gap-3 flex-1 max-w-xs">
-            <button
-              onClick={toggleMute}
-              className="p-2 text-theme-muted hover:text-theme-primary hover:bg-app-hover rounded-full transition-all duration-200"
-              aria-label={isMuted ? 'Unmute' : 'Mute'}
-            >
-              {isMuted || volume === 0 ? (
-                <VolumeX className="w-5 h-5" />
-              ) : (
-                <Volume2 className="w-5 h-5" />
-              )}
-            </button>
-            
-            <div className="flex-1 relative group">
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.01"
-                value={isMuted ? 0 : volume}
-                onChange={handleVolumeChange}
-                className="w-full h-1.5 bg-app-elevated rounded-full appearance-none cursor-pointer 
-                  [&::-webkit-slider-thumb]:appearance-none 
-                  [&::-webkit-slider-thumb]:w-3 
-                  [&::-webkit-slider-thumb]:h-3 
-                  [&::-webkit-slider-thumb]:rounded-full 
-                  [&::-webkit-slider-thumb]:bg-app-card 
-                  [&::-webkit-slider-thumb]:shadow-lg
-                  [&::-webkit-slider-thumb]:shadow-accent/50
-                  [&::-webkit-slider-thumb]:cursor-pointer
-                  [&::-webkit-slider-thumb]:transition-all
-                  [&::-webkit-slider-thumb]:hover:scale-125
-                  [&::-moz-range-thumb]:w-3 
-                  [&::-moz-range-thumb]:h-3 
-                  [&::-moz-range-thumb]:rounded-full 
-                  [&::-moz-range-thumb]:bg-app-card 
-                  [&::-moz-range-thumb]:border-0
-                  [&::-moz-range-thumb]:shadow-lg
-                  [&::-moz-range-thumb]:shadow-accent/50
-                  [&::-moz-range-thumb]:cursor-pointer
-                  [&::-moz-range-thumb]:transition-all
-                  [&::-moz-range-thumb]:hover:scale-125"
-                style={{
-                  background: `linear-gradient(to right,
-                    var(--accent-primary) 0%,
-                    var(--accent-bright) ${(isMuted ? 0 : volume) * 100}%,
-                    var(--bg-elevated) ${(isMuted ? 0 : volume) * 100}%,
-                    var(--bg-elevated) 100%)`,
-                }}
-              />
-            </div>
+        {/* ── Volume ── */}
+        <div className="flex items-center gap-3 px-2">
+          <button
+            onClick={toggleMute}
+            className="text-violet-500/60 hover:text-violet-300 transition-colors flex-shrink-0"
+          >
+            {isMuted || volume === 0
+              ? <VolumeX className="w-4 h-4" />
+              : <Volume2 className="w-4 h-4" />}
+          </button>
+
+          <div className="flex-1 relative">
+            <input
+              type="range" min="0" max="1" step="0.01"
+              value={isMuted ? 0 : volume}
+              onChange={handleVolumeChange}
+              className="w-full h-1 rounded-full appearance-none cursor-pointer
+                         [&::-webkit-slider-thumb]:appearance-none
+                         [&::-webkit-slider-thumb]:w-3
+                         [&::-webkit-slider-thumb]:h-3
+                         [&::-webkit-slider-thumb]:rounded-full
+                         [&::-webkit-slider-thumb]:bg-white
+                         [&::-webkit-slider-thumb]:border-2
+                         [&::-webkit-slider-thumb]:border-violet-400
+                         [&::-webkit-slider-thumb]:shadow-[0_0_6px_rgba(167,139,250,0.7)]
+                         [&::-webkit-slider-thumb]:cursor-pointer
+                         [&::-webkit-slider-thumb]:transition-transform
+                         [&::-webkit-slider-thumb]:hover:scale-125
+                         [&::-moz-range-thumb]:w-3
+                         [&::-moz-range-thumb]:h-3
+                         [&::-moz-range-thumb]:rounded-full
+                         [&::-moz-range-thumb]:bg-white
+                         [&::-moz-range-thumb]:border-2
+                         [&::-moz-range-thumb]:border-violet-400
+                         [&::-moz-range-thumb]:cursor-pointer"
+              style={{
+                background: `linear-gradient(to right,
+                  #7c3aed 0%,
+                  #a855f7 ${(isMuted ? 0 : volume) * 100}%,
+                  #1e1b35 ${(isMuted ? 0 : volume) * 100}%,
+                  #1e1b35 100%)`,
+              }}
+            />
           </div>
 
-          {/* Fullscreen Toggle */}
-          <button
-            onClick={toggleFullscreen}
-            className="p-2 text-theme-muted hover:text-theme-primary hover:bg-app-hover rounded-full transition-all duration-200"
-            aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
-          >
-            {isFullscreen ? (
-              <Minimize2 className="w-5 h-5" />
-            ) : (
-              <Maximize2 className="w-5 h-5" />
-            )}
-          </button>
+          <span className="text-[11px] tabular-nums text-violet-500/60 w-7 text-right">
+            {Math.round((isMuted ? 0 : volume) * 100)}
+          </span>
         </div>
+
       </div>
-    </section>
+    </div>
   );
 };
 
