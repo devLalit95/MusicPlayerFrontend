@@ -77,6 +77,7 @@ function AdminLoginForm({ onLogin }) {
                 onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
                 className="w-full px-4 py-3 pr-12 app-input w-full rounded-lg  focus:outline-none focus:ring-2 focus:ring-accent"
                 placeholder="Enter your password"
+                autoComplete="current-password"
                 disabled={loading}
               />
               <button
@@ -494,11 +495,10 @@ export default function AdminPage() {
                 if (tab.id === 'upload') resetForm();
                 setActiveTab(tab.id);
               }}
-              className={`py-4 border-b-2 text-sm font-medium ${
-                activeTab === tab.id
+              className={`py-4 border-b-2 text-sm font-medium ${activeTab === tab.id
                   ? 'border-accent text-accent'
                   : 'border-transparent text-theme-muted hover:text-theme-secondary'
-              }`}
+                }`}
             >
               {tab.label}
             </button>
@@ -519,12 +519,12 @@ export default function AdminPage() {
             initialData={
               editingSong
                 ? {
-                    title: editingSong.title,
-                    artist: editingSong.artist,
-                    album: editingSong.album || '',
-                    durationSeconds: editingSong.durationSeconds || '',
-                    file: null,
-                  }
+                  title: editingSong.title,
+                  artist: editingSong.artist,
+                  album: editingSong.album || '',
+                  durationSeconds: editingSong.durationSeconds || '',
+                  file: null,
+                }
                 : undefined
             }
           />

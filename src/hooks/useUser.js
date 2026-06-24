@@ -53,14 +53,14 @@ export function useUser() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const toggleProfileDropdown = () => {
+  const toggleProfileDropdown = useCallback(() => {
     setShowProfileDropdown((prev) => !prev);
-  };
+  }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     clearAuthSession();
     navigate('/login', { replace: true });
-  };
+  }, [navigate]);
 
   return {
     user,

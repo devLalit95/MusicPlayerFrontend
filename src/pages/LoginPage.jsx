@@ -93,7 +93,7 @@ export default function LoginPage() {
 
     const validateField = (name, value) => {
         let error = '';
-        
+
         switch (name) {
             case 'username':
                 error = validateUsername(value);
@@ -107,7 +107,7 @@ export default function LoginPage() {
             default:
                 break;
         }
-        
+
         return error;
     };
 
@@ -120,7 +120,7 @@ export default function LoginPage() {
 
         const value = isRegister ? registerForm[name] : loginForm[name];
         const error = validateField(name, value);
-        
+
         setFieldErrors(prev => ({
             ...prev,
             [name]: error
@@ -129,7 +129,7 @@ export default function LoginPage() {
 
     const getPasswordStrength = (password) => {
         if (!password) return { strength: 0, text: '', color: '' };
-        
+
         let strength = 0;
         if (password.length >= 6) strength++;
         if (password.length >= 10) strength++;
@@ -223,7 +223,7 @@ export default function LoginPage() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        
+
         if (isRegister) {
             setRegisterForm(prev => ({
                 ...prev,
@@ -244,7 +244,7 @@ export default function LoginPage() {
                 [name]: error
             }));
         }
-        
+
         if (error) {
             setError('');
         }
@@ -292,7 +292,7 @@ export default function LoginPage() {
                             </div>
                         </div>
                         <h2 className="text-4xl font-bold bg-gradient-to-r from-accent-soft via-accent-tint to-cyan-light bg-clip-text text-transparent mb-2">
-                            Beat Buff Music 
+                            Beat Buff Music
                         </h2>
                         <p className="text-theme-muted">
                             {isRegister ? 'Create your account' : 'Welcome back to your music'}
@@ -302,8 +302,8 @@ export default function LoginPage() {
                     {/* Error/Success Message */}
                     {error && (
                         <div className={`mb-6 p-4 ${error.includes('successful')
-                                ? 'bg-success/10 border border-success/50 text-success'
-                                : 'bg-danger/10 border border-danger/50 text-danger'
+                            ? 'bg-success/10 border border-success/50 text-success'
+                            : 'bg-danger/10 border border-danger/50 text-danger'
                             } rounded-xl text-sm flex items-start space-x-3 animate-fadeIn`}>
                             {error.includes('successful') ? (
                                 <FaCheckCircle className="mt-0.5 flex-shrink-0" />
@@ -324,13 +324,12 @@ export default function LoginPage() {
                                 </label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <FaUser className={`transition-colors duration-300 ${
-                                            touchedFields.username && !fieldErrors.username
-                                                ? 'text-success'
-                                                : fieldErrors.username
+                                        <FaUser className={`transition-colors duration-300 ${touchedFields.username && !fieldErrors.username
+                                            ? 'text-success'
+                                            : fieldErrors.username
                                                 ? 'text-danger'
                                                 : 'text-theme-muted'
-                                        }`} />
+                                            }`} />
                                     </div>
                                     <input
                                         type="text"
@@ -339,19 +338,18 @@ export default function LoginPage() {
                                         onChange={handleInputChange}
                                         onBlur={handleBlur}
                                         placeholder="Enter your username"
-                                        className={`app-input w-full pl-10 pr-10 py-3 rounded-xl ${
-                                            touchedFields.username && !fieldErrors.username
-                                                ? 'border-success focus:border-success'
-                                                : fieldErrors.username
+                                        autoComplete="username"
+                                        className={`app-input w-full pl-10 pr-10 py-3 rounded-xl ${touchedFields.username && !fieldErrors.username
+                                            ? 'border-success focus:border-success'
+                                            : fieldErrors.username
                                                 ? 'border-danger focus:border-danger'
                                                 : ''
-                                        } focus:ring-2 ${
-                                            touchedFields.username && !fieldErrors.username
+                                            } focus:ring-2 ${touchedFields.username && !fieldErrors.username
                                                 ? 'focus:ring-success/20'
                                                 : fieldErrors.username
-                                                ? 'focus:ring-danger/20'
-                                                : 'focus:ring-accent/20'
-                                        } transition-all duration-300`}
+                                                    ? 'focus:ring-danger/20'
+                                                    : 'focus:ring-accent/20'
+                                            } transition-all duration-300`}
                                         disabled={loading}
                                     />
                                     {touchedFields.username && !fieldErrors.username && (
@@ -376,13 +374,12 @@ export default function LoginPage() {
                                     </label>
                                     <div className="relative group">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <FaEnvelope className={`transition-colors duration-300 ${
-                                                touchedFields.email && !fieldErrors.email
-                                                    ? 'text-success'
-                                                    : fieldErrors.email
+                                            <FaEnvelope className={`transition-colors duration-300 ${touchedFields.email && !fieldErrors.email
+                                                ? 'text-success'
+                                                : fieldErrors.email
                                                     ? 'text-danger'
                                                     : 'text-theme-muted'
-                                            }`} />
+                                                }`} />
                                         </div>
                                         <input
                                             type="email"
@@ -391,19 +388,17 @@ export default function LoginPage() {
                                             onChange={handleInputChange}
                                             onBlur={handleBlur}
                                             placeholder="Enter your email"
-                                            className={`w-full pl-10 pr-10 py-3  app-input border ${
-                                                touchedFields.email && !fieldErrors.email
-                                                    ? 'border-success/50 focus:border-success'
-                                                    : fieldErrors.email
+                                            className={`w-full pl-10 pr-10 py-3  app-input border ${touchedFields.email && !fieldErrors.email
+                                                ? 'border-success/50 focus:border-success'
+                                                : fieldErrors.email
                                                     ? 'border-danger/50 focus:border-danger'
                                                     : ''
-                                            } rounded-xl text-theme-primary  focus:outline-none focus:ring-2 ${
-                                                touchedFields.email && !fieldErrors.email
+                                                } rounded-xl text-theme-primary  focus:outline-none focus:ring-2 ${touchedFields.email && !fieldErrors.email
                                                     ? 'focus:ring-success/20'
                                                     : fieldErrors.email
-                                                    ? 'focus:ring-danger/20'
-                                                    : 'focus:ring-accent/20'
-                                            } transition-all duration-300`}
+                                                        ? 'focus:ring-danger/20'
+                                                        : 'focus:ring-accent/20'
+                                                } transition-all duration-300`}
                                             disabled={loading}
                                         />
                                         {touchedFields.email && !fieldErrors.email && (
@@ -428,13 +423,12 @@ export default function LoginPage() {
                                 </label>
                                 <div className="relative group">
                                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <FaLock className={`transition-colors duration-300 ${
-                                            touchedFields.password && !fieldErrors.password
-                                                ? 'text-success'
-                                                : fieldErrors.password
+                                        <FaLock className={`transition-colors duration-300 ${touchedFields.password && !fieldErrors.password
+                                            ? 'text-success'
+                                            : fieldErrors.password
                                                 ? 'text-danger'
                                                 : 'text-theme-muted'
-                                        }`} />
+                                            }`} />
                                     </div>
                                     <input
                                         type={showPassword ? "text" : "password"}
@@ -443,19 +437,18 @@ export default function LoginPage() {
                                         onChange={handleInputChange}
                                         onBlur={handleBlur}
                                         placeholder={isRegister ? "Create a strong password" : "Enter your password"}
-                                        className={`w-full pl-10 pr-10 py-3  app-input border ${
-                                            touchedFields.password && !fieldErrors.password
-                                                ? 'border-success/50 focus:border-success'
-                                                : fieldErrors.password
+                                        autoComplete={isRegister ? 'new-password' : 'current-password'}
+                                        className={`w-full pl-10 pr-10 py-3  app-input border ${touchedFields.password && !fieldErrors.password
+                                            ? 'border-success/50 focus:border-success'
+                                            : fieldErrors.password
                                                 ? 'border-danger/50 focus:border-danger'
                                                 : ''
-                                        } rounded-xl text-theme-primary  focus:outline-none focus:ring-2 ${
-                                            touchedFields.password && !fieldErrors.password
+                                            } rounded-xl text-theme-primary  focus:outline-none focus:ring-2 ${touchedFields.password && !fieldErrors.password
                                                 ? 'focus:ring-success/20'
                                                 : fieldErrors.password
-                                                ? 'focus:ring-danger/20'
-                                                : 'focus:ring-accent/20'
-                                        } transition-all duration-300`}
+                                                    ? 'focus:ring-danger/20'
+                                                    : 'focus:ring-accent/20'
+                                            } transition-all duration-300`}
                                         disabled={loading}
                                     />
                                     <button
@@ -467,7 +460,7 @@ export default function LoginPage() {
                                         {showPassword ? <FaEyeSlash /> : <FaEye />}
                                     </button>
                                 </div>
-                                
+
                                 {/* Password Strength Indicator */}
                                 {isRegister && registerForm.password && (
                                     <div className="mt-2 space-y-2">
@@ -475,33 +468,31 @@ export default function LoginPage() {
                                             {[1, 2, 3, 4, 5].map((level) => (
                                                 <div
                                                     key={level}
-                                                    className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
-                                                        level <= passwordStrength?.strength
-                                                            ? passwordStrength?.color
-                                                            : 'bg-elevated'
-                                                    }`}
+                                                    className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${level <= passwordStrength?.strength
+                                                        ? passwordStrength?.color
+                                                        : 'bg-elevated'
+                                                        }`}
                                                 ></div>
                                             ))}
                                         </div>
                                         {passwordStrength && (
                                             <p className="text-xs text-theme-muted">
-                                                Password strength: <span className={`font-medium ${
-                                                    passwordStrength.strength >= 4 ? 'text-success' :
+                                                Password strength: <span className={`font-medium ${passwordStrength.strength >= 4 ? 'text-success' :
                                                     passwordStrength.strength >= 3 ? 'text-cyan-light' :
-                                                    'text-warning'
-                                                }`}>{passwordStrength.text}</span>
+                                                        'text-warning'
+                                                    }`}>{passwordStrength.text}</span>
                                             </p>
                                         )}
                                     </div>
                                 )}
-                                
+
                                 {fieldErrors.password && touchedFields.password && (
                                     <p className="mt-2 text-xs text-danger flex items-center space-x-1">
                                         <FaExclamationTriangle />
                                         <span>{fieldErrors.password}</span>
                                     </p>
                                 )}
-                                
+
                                 {isRegister && !fieldErrors.password && (
                                     <div className="mt-3 space-y-1.5 text-xs text-theme-muted">
                                         <p className="font-medium text-theme-secondary flex items-center space-x-1">
@@ -572,7 +563,7 @@ export default function LoginPage() {
                 </div>
             </div>
 
-            <style jsx>{`
+            <style>{`
                 @keyframes blob {
                     0%, 100% { transform: translate(0, 0) scale(1); }
                     33% { transform: translate(30px, -50px) scale(1.1); }

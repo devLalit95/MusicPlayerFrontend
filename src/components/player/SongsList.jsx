@@ -89,11 +89,13 @@ const SongsList = ({
   isPlaying,
   playSong,
   formatTime,
+  likedSongIds = new Set(),
+  onToggleLike = () => { },
   isLoading = false,
 }) => {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [likedIds, setLikedIds] = useState(new Set());
+  const likedIds = useMemo(() => new Set(likedSongIds), [likedSongIds]);
   const inputRef = useRef(null);
 
   useEffect(() => {
@@ -153,11 +155,7 @@ const SongsList = ({
 
   const toggleLike = (e, id) => {
     e.stopPropagation();
-    setLikedIds(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+    onToggleLike(id);
   };
 
   return (
@@ -301,20 +299,13 @@ const SongsList = ({
                       [scrollbar-color:rgba(91,33,182,0.4)_transparent]
                       px-2 py-1.5">
 
-        {/* Loading skeleton */}
+        {/* Loading spinner (premium) */}
         {isLoading && (
-          <div className="space-y-1 p-2">
-            {Array.from({ length: 7 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl">
-                <div className="w-5 h-3 rounded bg-violet-900/60 animate-pulse" />
-                <div className="w-6 h-6 rounded-lg bg-violet-900/60 animate-pulse flex-shrink-0" />
-                <div className="flex-1 space-y-1.5">
-                  <div className="h-2.5 rounded bg-violet-900/50 animate-pulse w-2/3" />
-                  <div className="h-2 rounded bg-violet-900/40 animate-pulse w-1/3" />
-                </div>
-                <div className="w-8 h-2.5 rounded bg-violet-900/40 animate-pulse" />
-              </div>
-            ))}
+          <div className="flex items-center justify-center py-12">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-12 h-12 rounded-full border-4 border-t-4 border-violet-600 animate-spin" />
+              <div className="text-sm text-violet-400">Loading library…</div>
+            </div>
           </div>
         )}
 
@@ -337,7 +328,7 @@ const SongsList = ({
 
           return (
             <div
-              key={`${song.id}-${activeQuery}`}
+              key={song.id}
               onClick={() => playSong(song)}
               style={{
                 animation: hasActiveSearch
@@ -355,10 +346,8 @@ const SongsList = ({
                 ${isActive
                   ? 'bg-violet-600/[0.13] hover:bg-violet-600/[0.18]'
                   : isSearchMatch
-                    ? 'bg-cyan-400/[0.06] ring-1 ring-cyan-300/10 hover:bg-cyan-400/[0.1]'
-                    : hasActiveSearch
-                      ? 'opacity-55 hover:opacity-90 hover:bg-violet-900/20'
-                      : 'hover:bg-violet-900/25'
+                    ? 'bg-cyan-400/[0.08] ring-1 ring-cyan-300/10 hover:bg-cyan-400/[0.14]'
+                    : 'hover:bg-violet-900/25'
                 }
               `}
             >

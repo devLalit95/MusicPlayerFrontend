@@ -1,13 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Music2, LogOut, ChevronDown } from 'lucide-react';
 import NowPlaying from '../components/player/NowPlaying';
 import SongsList from '../components/player/SongsList';
 import { useMusicPlayer } from '../hooks/useMusicPlayer';
 import { useUser } from '../hooks/useUser';
 import { getStoredToken } from '../utils/storage';
+import { isSessionExpiredError } from '../utils/errors';
+import UserService from '../services/userService';
 import '../styles/MusicPlayer.css';
 
-function PlayerHeader({ user, showProfileDropdown, profileDropdownRef, toggleProfileDropdown, handleLogout }) {
+function PlayerHeader({ user, showProfileDropdown, profileDropdownRef, toggleProfileDropdown, onOpenProfile, handleLogout }) {
   return (
     <header className="app-header px-4 md:px-6 py-3 md:py-4">
       <div className="flex items-center justify-between max-w-screen-2xl mx-auto">
@@ -33,9 +36,8 @@ function PlayerHeader({ user, showProfileDropdown, profileDropdownRef, togglePro
               {user?.name}
             </span>
             <ChevronDown
-              className={`w-4 h-4 text-theme-muted transition-transform duration-200 ${
-                showProfileDropdown ? 'rotate-180' : ''
-              }`}
+              className={`w-4 h-4 text-theme-muted transition-transform duration-200 ${showProfileDropdown ? 'rotate-180' : ''
+                }`}
             />
           </button>
 
@@ -55,7 +57,14 @@ function PlayerHeader({ user, showProfileDropdown, profileDropdownRef, togglePro
                   </div>
                 </div>
               </div>
-              <div className="p-2 border-t border-theme">
+              <div className="p-2 border-t border-theme space-y-2">
+                <button
+                  type="button"
+                  onClick={onOpenProfile}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-accent/10 hover:bg-accent/20 border border-accent/20 text-left"
+                >
+                  <span className="text-sm text-accent font-medium">Profile</span>
+                </button>
                 <button
                   type="button"
                   onClick={handleLogout}
@@ -75,6 +84,12 @@ function PlayerHeader({ user, showProfileDropdown, profileDropdownRef, togglePro
 
 export default function MusicPlayerPage() {
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [likedSongIds, setLikedSongIds] = useState(new Set());
+  const [likesLoading, setLikesLoading] = useState(false);
+
+  const token = getStoredToken();
+  const userService = useMemo(() => new UserService(token ?? ''), [token]);
+  const navigate = useNavigate();
 
   const {
     user,
@@ -117,6 +132,75 @@ export default function MusicPlayerPage() {
     }
   }, [user, fetchSongs]);
 
+  useEffect(() => {
+    const fetchLiked = async () => {
+      if (!token) return;
+      setLikesLoading(true);
+      try {
+        const likedSongs = await userService.getLikedSongs();
+        const ids = new Set(Array.isArray(likedSongs) ? likedSongs.map((song) => song.id) : []);
+        setLikedSongIds(ids);
+      } catch (err) {
+        if (isSessionExpiredError(err)) {
+          handleLogout();
+          return;
+        }
+      } finally {
+        setLikesLoading(false);
+      }
+    };
+
+    fetchLiked();
+  }, [token, userService, handleLogout]);
+
+  const handleToggleLike = async (songId) => {
+    if (!token) return;
+
+    const nextLiked = new Set(likedSongIds);
+    const alreadyLiked = nextLiked.has(songId);
+    setLikedSongIds((prev) => {
+      const next = new Set(prev);
+      if (alreadyLiked) next.delete(songId);
+      else next.add(songId);
+      return next;
+    });
+
+    try {
+      if (alreadyLiked) {
+        await userService.dislikeSong(songId);
+      } else {
+        await userService.likeSong(songId);
+      }
+    } catch (err) {
+      if (isSessionExpiredError(err)) {
+        handleLogout();
+        return;
+      }
+      setLikedSongIds((prev) => {
+        const next = new Set(prev);
+        if (alreadyLiked) next.add(songId);
+        else next.delete(songId);
+        return next;
+      });
+    }
+  };
+
+  const handlePlaySong = async (song) => {
+    playSong(song);
+
+    if (!token || !song?.id) return;
+
+    try {
+      await userService.listenSong(song.id);
+    } catch (err) {
+      if (isSessionExpiredError(err)) {
+        handleLogout();
+      }
+    }
+  };
+
+  const openProfile = () => navigate('/profile');
+
   if (loading || songsLoading) {
     return (
       <div className="loading-container">
@@ -153,6 +237,7 @@ export default function MusicPlayerPage() {
         showProfileDropdown={showProfileDropdown}
         profileDropdownRef={profileDropdownRef}
         toggleProfileDropdown={toggleProfileDropdown}
+        onOpenProfile={openProfile}
         handleLogout={handleLogout}
       />
 
@@ -175,6 +260,8 @@ export default function MusicPlayerPage() {
               toggleFullscreen={() => setIsFullscreen(!isFullscreen)}
               isFullscreen={isFullscreen}
               formatTime={formatTime}
+              isLiked={likedSongIds.has(currentSong?.id)}
+              onToggleLike={() => handleToggleLike(currentSong?.id)}
             />
           )}
 
@@ -182,10 +269,13 @@ export default function MusicPlayerPage() {
             songs={songs}
             currentSong={currentSong}
             isPlaying={isPlaying}
-            playSong={playSong}
+            playSong={handlePlaySong}
             formatTime={formatTime}
+            likedSongIds={likedSongIds}
+            onToggleLike={handleToggleLike}
             isFullscreen={isFullscreen}
             toggleFullscreen={() => setIsFullscreen(!isFullscreen)}
+            isLoading={songsLoading}
           />
         </main>
       </div>

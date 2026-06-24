@@ -18,10 +18,11 @@ const NowPlaying = ({
   handleVolumeChange,
   toggleMute,
   formatTime,
+  isLiked = false,
+  onToggleLike = () => { },
 }) => {
   const [isShuffled, setIsShuffled] = useState(false);
   const [repeatMode, setRepeatMode] = useState('off');
-  const [isLiked, setIsLiked] = useState(false);
 
   const progress = currentSong?.durationSeconds
     ? (currentTime / currentSong.durationSeconds) * 100
@@ -77,7 +78,7 @@ const NowPlaying = ({
             </div>
             {/* Like button floating on art */}
             <button
-              onClick={() => setIsLiked(!isLiked)}
+              onClick={onToggleLike}
               className={`absolute top-2 right-2 sm:top-3 sm:right-3 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center
                           backdrop-blur-sm border transition-all duration-200
                           ${isLiked
